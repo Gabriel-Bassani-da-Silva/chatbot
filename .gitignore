@@ -1,0 +1,38 @@
+# =============================================================================
+# .gitignore
+# =============================================================================
+
+# Backups gerados (podem conter dados sensiveis)
+bkp/backups/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Dados dos containers (caso montados localmente)
+pgdata/
+n8n_data/
+
+# =============================================================================
+# O que NAO esta aqui (ou seja, e commitado):
+#   versions.env   — versoes das imagens (sem segredos)
+#   compose.yml    — infraestrutura
+#   postgres-init.sql
+#   Caddyfile / Dockerfile
+# =============================================================================
+.agents/
+
+# Environment files can contain live credentials. Keep only the sanitized template.
+.env
+.env.*
+!.env.example
+
+# Python build/test artifacts
+__pycache__/
+*.py[cod]
+
+# Temporary files created by setup and local tooling
+*.tmp
+*.log
+.setup-outputs/

@@ -1,0 +1,132 @@
+{
+  "name": "Subworkflow - WAHA Saída",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "session"
+            },
+            {
+              "name": "chat_id"
+            },
+            {
+              "name": "text"
+            },
+            {
+              "name": "waha_message_id"
+            }
+          ]
+        }
+      },
+      "id": "e0c387bd-df4c-4adb-904a-5f6a4608cfb3",
+      "name": "Entrada - Dados da Resposta",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WAHA_BASE_URL + \"/api/sendText\" }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wahaApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"session\": $json.session, \"chatId\": $json.chat_id, \"text\": $json.text, \"reply_to\": $json.waha_message_id || undefined } }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "26f84fd5-fe6f-477e-9c6d-4ea00f314684",
+      "name": "WAHA - Enviar Mensagem",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "credentials": {
+        "wahaApi": {
+          "id": "NjX3RBbPHkq1iPg7",
+          "name": "WAHA account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "console.error(\"WAHA SendText falhou\", JSON.stringify($json));\nreturn { json: { error: true, reason: $json.message ?? \"Falha ao enviar mensagem WAHA\", timestamp: new Date().toISOString() } };"
+      },
+      "id": "98a13ccd-f802-488e-b11d-33e92ea6cd79",
+      "name": "Log - Erro de Envio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## WAHA Saída\n\nRecebe do agente:\n- `session` — nome da sessão WAHA\n- `chat_id` — número destino\n- `text` — resposta gerada\n- `waha_message_id` — id da msg original (para reply)\n\nEnvia via `POST /api/sendText`.\nErros são logados sem interromper o agente principal.",
+        "height": 432,
+        "color": 5
+      },
+      "id": "962f6c64-400e-43a6-b687-3ee362697578",
+      "name": "Sticky Note b0148e1c",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -144
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entrada - Dados da Resposta": {
+      "main": [
+        [
+          {
+            "node": "WAHA - Enviar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAHA - Enviar Mensagem": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Log - Erro de Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "d3b1a957-9cf2-4c7d-b81d-6a2b36d7a504",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "5e6fad50a2a8939124ebf79f7fbc729e5d52c2e04b1319c499246730993f9755"
+  },
+  "nodeGroups": [],
+  "id": "GZsqUru4sVXy3I5l",
+  "tags": []
+}

@@ -1,0 +1,316 @@
+{
+  "name": "Subworkflow - WAHA Entrada",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "waha-incoming",
+        "options": {
+          "noResponseBody": true
+        }
+      },
+      "id": "88ee40f9-8f9f-4fe1-8521-3325646eeb19",
+      "name": "WAHA - Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -16,
+        -48
+      ],
+      "webhookId": "9165e62a-d807-408c-aea5-a10dbc5621f6"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const envelope = $json.body ?? $json;\nconst payload = envelope.payload ?? envelope;\nconst media = payload.media ?? {};\nconst timestamp = Number(envelope.timestamp ?? payload.timestamp ?? Date.now());\nconst receivedAt = timestamp < 100000000000 ? timestamp * 1000 : timestamp;\nconst chatId = String(payload.from ?? payload.to ?? \"\");\nconst fromMe = Boolean(payload.fromMe ?? payload.key?.fromMe ?? false);\nconst messageId = String(payload.id ?? envelope.id ?? (chatId + \":\" + receivedAt));\nreturn { json: {\n  source: \"waha\",\n  channel: \"waha\",\n  from_me: fromMe,\n  session: String(envelope.session ?? \"default\"),\n  session_id: chatId,\n  conversation_id: chatId,\n  user_id: chatId,\n  chat_id: chatId,\n  message_id: messageId,\n  waha_message_id: messageId,\n  text: String(payload.body ?? \"\"),\n  caption: String(payload.body ?? \"\"),\n  mime_type: String(media.mimetype ?? \"\"),\n  media_url: String(media.url ?? \"\"),\n  received_at: new Date(receivedAt).toISOString(),\n  received_at_ms: receivedAt,\n  queue_key: \"waha:queue:\" + (chatId || \"unknown\"),\n  input_type: media.mimetype?.startsWith(\"image/\") ? (payload.body ? \"image_with_caption\" : \"image\") : media.mimetype?.startsWith(\"audio/\") ? \"audio\" : (media.url || payload.hasMedia) ? \"document\" : \"text\"\n} };"
+      },
+      "id": "fa4831a5-007f-42d6-a1a7-f89e8a93a3ca",
+      "name": "WAHA - Normalizar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.from_me }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "false"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c5dfd748-99c5-4029-9029-4f29f9820049",
+      "name": "IF - Mensagem Própria",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "={{ $json.queue_key }}",
+        "messageData": "={{ JSON.stringify($json) }}",
+        "tail": true
+      },
+      "id": "21c1054b-c107-4669-a791-0990a78ae3b3",
+      "name": "Redis - Fila WAHA FIFO",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -48
+      ],
+      "credentials": {
+        "redis": {
+          "id": "BHGPqGYPnd6PfxdA",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "publish",
+        "channel": "waha:incoming",
+        "messageData": "={{ JSON.stringify($json) }}"
+      },
+      "id": "c4e524c2-3565-4f15-9dcf-14fc0808c5b8",
+      "name": "Redis - Sinalizar WAHA",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -48
+      ],
+      "credentials": {
+        "redis": {
+          "id": "BHGPqGYPnd6PfxdA",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channels": "waha:incoming",
+        "options": {
+          "jsonParseBody": true,
+          "onlyMessage": true
+        }
+      },
+      "id": "043a0c54-d7db-4139-98de-1e14d8607e2d",
+      "name": "Redis - Worker WAHA",
+      "type": "n8n-nodes-base.redisTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        224
+      ],
+      "credentials": {
+        "redis": {
+          "id": "BHGPqGYPnd6PfxdA",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pop",
+        "list": "={{ $json.queue_key }}",
+        "options": {}
+      },
+      "id": "48498c28-fc31-4f9a-9d3f-2e2b69b2d208",
+      "name": "Redis - Desenfileirar WAHA",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        224,
+        224
+      ],
+      "credentials": {
+        "redis": {
+          "id": "BHGPqGYPnd6PfxdA",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $json.message ?? $json.data ?? $json.value ?? $json;\nconst item = typeof raw === \"string\" ? JSON.parse(raw) : raw;\nreturn { json: { ...item, dequeued_at: new Date().toISOString() } };"
+      },
+      "id": "d4cf5df6-beef-4a23-9797-9086ce97dea7",
+      "name": "WAHA - Ler Item da Fila",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Q49jTFzq9QDPU5AO"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "e665fc6d-1fcf-4989-9af5-1a7c115342ae",
+      "name": "Chamar Agente Principal",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## WAHA Entrada\n\nFluxo de recepção:\n1. Webhook recebe evento do WAHA\n2. Normaliza payload\n3. **Filtra mensagens do próprio número** (fromMe = true são descartadas)\n4. Enfileira no Redis FIFO por chat_id\n5. Publica sinal no canal waha:incoming\n\nWorker separado:\n- Redis Trigger escuta waha:incoming\n- Faz pop da fila\n- Repassa ao agente principal",
+        "height": 464,
+        "width": 448,
+        "color": 3
+      },
+      "id": "e610e07a-018b-461b-871f-e542fde65e62",
+      "name": "Sticky Note 5f4c2077",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Worker Redis\nConsome uma mensagem da fila por vez, garantindo ordem FIFO por chat.",
+        "height": 240,
+        "width": 902,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        144
+      ],
+      "id": "a7231801-82c9-4167-860a-f1ff9a203baf",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WAHA - Webhook": {
+      "main": [
+        [
+          {
+            "node": "WAHA - Normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAHA - Normalizar": {
+      "main": [
+        [
+          {
+            "node": "IF - Mensagem Própria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Mensagem Própria": {
+      "main": [
+        [
+          {
+            "node": "Redis - Fila WAHA FIFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis - Fila WAHA FIFO": {
+      "main": [
+        [
+          {
+            "node": "Redis - Sinalizar WAHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis - Worker WAHA": {
+      "main": [
+        [
+          {
+            "node": "Redis - Desenfileirar WAHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis - Desenfileirar WAHA": {
+      "main": [
+        [
+          {
+            "node": "WAHA - Ler Item da Fila",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAHA - Ler Item da Fila": {
+      "main": [
+        [
+          {
+            "node": "Chamar Agente Principal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "2c52b3e2-9331-4ee1-9d34-dead78e51d4c",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "5e6fad50a2a8939124ebf79f7fbc729e5d52c2e04b1319c499246730993f9755"
+  },
+  "nodeGroups": [],
+  "id": "j5vDkvwFVvdeusnH",
+  "tags": []
+}

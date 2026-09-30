@@ -1,0 +1,162 @@
+{
+  "name": "Subworkflow - Arquivar Conversa",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "8d380c0e-b3c6-44a2-96b4-59edf5e5dd8e",
+      "name": "Entrada - Arquivo",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS public.n8n_conversation_history (id BIGSERIAL PRIMARY KEY, session_id TEXT NOT NULL, user_id TEXT, conversation_id TEXT, message_id TEXT, user_message TEXT, assistant_message TEXT, source TEXT, received_at TIMESTAMPTZ, processed_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()); ALTER TABLE public.n8n_conversation_history ADD COLUMN IF NOT EXISTS message_id TEXT; ALTER TABLE public.n8n_conversation_history ADD COLUMN IF NOT EXISTS received_at TIMESTAMPTZ; ALTER TABLE public.n8n_conversation_history ADD COLUMN IF NOT EXISTS processed_at TIMESTAMPTZ; CREATE INDEX IF NOT EXISTS idx_n8n_conversation_history_session_received ON public.n8n_conversation_history (session_id, received_at); CREATE INDEX IF NOT EXISTS idx_n8n_conversation_history_message_id ON public.n8n_conversation_history (message_id);",
+        "options": {}
+      },
+      "id": "3fa75d6e-c3be-4fbb-9315-22a6666f3e8c",
+      "name": "Postgres - Garantir Histórico",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        528,
+        304
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b3xnM6ihufBx4HRm",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "name",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "name",
+          "value": "n8n_conversation_history"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "assistant_message": "={{ $json.assistant_message }}",
+            "conversation_id": "={{ $json.conversation_id }}",
+            "session_id": "={{ $json.session_id }}",
+            "source": "={{ $json.source }}",
+            "user_id": "={{ $json.user_id }}",
+            "user_message": "={{ $json.user_message }}",
+            "message_id": "={{ $json.message_id }}",
+            "processed_at": "={{ $json.processed_at }}",
+            "received_at": "={{ $json.received_at }}"
+          }
+        },
+        "options": {
+          "replaceEmptyStrings": false
+        }
+      },
+      "id": "f3739add-7c21-4cc3-84b1-f0d3743c19f8",
+      "name": "Postgres - Arquivar Conversa",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        896,
+        304
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b3xnM6ihufBx4HRm",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "HISTÓRICO PERMANENTE\n\nCria a tabela se necessário e arquiva pergunta, resposta, sessão, usuário, conversa e origem no PostgreSQL. Redis permanece como memória rápida do agente."
+      },
+      "id": "89aac597-9748-4c03-b9dd-d827a952cccc",
+      "name": "Sticky Note 1faf5d00",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        112,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const original = $('Entrada - Arquivo').first();\nreturn { json: { session_id: original.json.session_id, user_id: original.json.user_id, conversation_id: original.json.conversation_id, message_id: original.json.message_id || original.json.waha_message_id || '', user_message: original.json.user_message, assistant_message: original.json.assistant_message, source: original.json.source, received_at: original.json.received_at || null, processed_at: new Date().toISOString() } };"
+      },
+      "id": "prepare-history-row",
+      "name": "Preparar - Linha do Histórico",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        304
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entrada - Arquivo": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Garantir Histórico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Garantir Histórico": {
+      "main": [
+        [
+          {
+            "node": "Preparar - Linha do Histórico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar - Linha do Histórico": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Arquivar Conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "d8923efe-e56e-4f27-b71d-13a0625cb58a",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "5e6fad50a2a8939124ebf79f7fbc729e5d52c2e04b1319c499246730993f9755"
+  },
+  "nodeGroups": [],
+  "id": "UBO6dbn3dAzDPTDw",
+  "tags": []
+}

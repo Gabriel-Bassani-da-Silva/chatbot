@@ -1,0 +1,1588 @@
+{
+  "name": "ollama",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "allowFileUploads": true,
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -2544,
+        112
+      ],
+      "id": "e091e461-7846-43a7-a1c8-8d8f2493e8f3",
+      "name": "Entrada - Chat",
+      "webhookId": "633f00ad-7a3f-4054-acbe-501f199efbde"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/** Normaliza texto, mídia, sessão e qualquer arquivo binário para o roteamento multimodal. */\nconst body = $json.body ?? $json;\nconst text = $json.chatInput ?? body.text ?? body.message ?? '';\nconst mime = body.mime_type ?? body.mimeType ?? $json.mime_type ?? ($binary?.data?.mimeType ?? '');\nconst hasBinary = !!$binary?.data;\nconst caption = String(text || '').trim();\nconst mimeType = String(mime || '').toLowerCase();\nconst hasText = caption.length > 0;\nconst isImage = mimeType.startsWith('image/') || (hasBinary && String($binary?.data?.mimeType ?? '').toLowerCase().startsWith('image/'));\nconst isAudio = mimeType.startsWith('audio/') || (hasBinary && String($binary?.data?.mimeType ?? '').toLowerCase().startsWith('audio/'));\nconst isDocument = hasBinary && !isImage && !isAudio;\nlet inputType = 'unknown';\nif (isImage && hasText) inputType = 'image_with_caption';\nelse if (isImage) inputType = 'image';\nelse if (isAudio) inputType = 'audio';\nelse if (isDocument && hasText) inputType = 'document_with_caption';\nelse if (isDocument) inputType = 'document';\nelse if (hasText) inputType = 'text';\nconst sessionId = String($json.sessionId ?? $json.session_id ?? body.sessionId ?? body.session_id ?? $json.chatId ?? body.chatId ?? $execution.id);\nconst conversationId = String($json.conversationId ?? $json.conversation_id ?? body.conversationId ?? body.conversation_id ?? sessionId);\nconst userId = String($json.userId ?? $json.user_id ?? body.userId ?? body.user_id ?? 'anonymous');\nconst output = { json: { ...body, text: caption, caption, mime_type: mimeType, input_type: inputType, has_caption: (isImage || isDocument) && hasText, session_id: sessionId, conversation_id: conversationId, user_id: userId }, pairedItem: { item: 0 } };\nif (hasBinary) output.binary = $binary;\nreturn output;"
+      },
+      "id": "normalize-input",
+      "name": "Entrada - Normalizar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2320,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "content-text",
+              "name": "content_text",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "type": "string",
+              "value": "text"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "process-text",
+      "name": "Texto - Processar",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1808,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "llava"
+        },
+        "text": "Descreva a imagem com detalhes úteis para responder à pergunta do usuário. Extraia textos visíveis, entidades e informações relevantes.",
+        "options": {}
+      },
+      "id": "process-image",
+      "name": "Imagem - Ollama",
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
+      "position": [
+        -1808,
+        -64
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500,
+      "credentials": {
+        "ollamaApi": {
+          "id": "Jb3hpDoEolendPGD",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "content-text",
+              "name": "content_text",
+              "type": "string",
+              "value": "={{ $json.text || 'Entrada não reconhecida. Explique o que deseja analisar.' }}"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "type": "string",
+              "value": "unknown"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "fallback-input",
+      "name": "Fallback",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1824,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/** Consolida o resultado de cada rota e preserva a legenda. */\nconst input = $json;\nconst extracted = input.content_text || input.text || input.data || input.output || input.response || input.transcription || 'Não foi encontrado conteúdo textual para analisar.';\nconst caption = String(input.caption || '').trim();\nconst isDocumentWithCaption = input.processing_mode === 'document_with_caption' || input.processing_mode === 'user_document_with_caption' || input.input_type === 'document_with_caption';\nconst content = caption && isDocumentWithCaption\n  ? `Legenda do usuário: ${caption}\\n\\nConteúdo do documento:\\n${extracted}`\n  : String(extracted);\nreturn { json: { ...input, content_text: content, content_type: input.content_type || input.input_type || 'unknown' }, binary: $binary };"
+      },
+      "id": "consolidate-content",
+      "name": "Conteúdo - Consolidar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "think": false,
+          "temperature": 0.2,
+          "numCtx": 4096
+        }
+      },
+      "id": "ollama-model",
+      "name": "IA - Modelo",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        672
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500,
+      "credentials": {
+        "ollamaApi": {
+          "id": "Jb3hpDoEolendPGD",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.courseListFAQ === true ? 'Pergunta do usuário: ' + ($json.searchQuestion || $json.content_text || $json.text || '') + '\\n\\nInformação de referência fornecida pelo responsável para esta pergunta: os cursos oferecidos pela Fatec Bebedouro são Logística e Big Data no Agronegócio.' : ($json.content_text || $json.text || $json.data || $json.output || 'Analise a entrada recebida.') }}",
+        "options": {
+          "systemMessage": "Você é um assistente multimodal em português do Brasil. Responda diretamente ao usuário, com clareza e sem inventar fatos. Para perguntas sobre Fatec, Fatec Bebedouro, vestibular, cursos, TCC, estágio, documentos, biblioteca, disciplinas ou serviços, não use conhecimento próprio, memória ou RAG como fonte factual: use somente os trechos oficiais que tenham sido encontrados e incluídos na entrada. Se não houver trecho oficial suficiente, diga que não encontrou informação oficial suficiente; nunca preencha lacunas com suposições. EXCEÇÃO: quando a entrada marcar courseListFAQ=true, a informação de referência fornecida pelo responsável é a fonte para esta resposta. Responda a pergunta de forma natural afirmando apenas que os cursos da Fatec Bebedouro são Logística e Big Data no Agronegócio. Não use ferramenta RAG, memória ou busca para esta resposta e não acrescente cursos, unidades, detalhes ou ressalvas. Para assuntos gerais fora de Fatec, use o RAG somente quando os trechos forem relevantes e suficientes; se não, peça esclarecimento ou admita a incerteza.",
+          "maxIterations": 6,
+          "passthroughBinaryImages": true
+        }
+      },
+      "id": "multimodal-agent",
+      "name": "IA - Agente",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        384,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Mensagem enviada pelo usuario\n",
+        "height": 464,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2640,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "cae6c371-19fd-4356-be38-4dbebbcbd949",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "llava"
+        },
+        "text": "={{ 'Analise a imagem considerando também esta legenda do usuário: ' + $json.caption }}",
+        "options": {}
+      },
+      "id": "image-with-caption",
+      "name": "Imagem - Legenda",
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
+      "position": [
+        -1808,
+        96
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500,
+      "credentials": {
+        "ollamaApi": {
+          "id": "Jb3hpDoEolendPGD",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.input_type }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "text"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.input_type }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "image"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.input_type }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "image_with_caption"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "image_with_caption"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.input_type }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "audio"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.input_type }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "document"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "document"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.input_type }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "document_with_caption"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "document_with_caption"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "fallback"
+        }
+      },
+      "id": "switch-input-type",
+      "name": "Roteador - Tipo",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -2080,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "processing-mode",
+              "name": "processing_mode",
+              "type": "string",
+              "value": "audio_pending_local_transcription"
+            },
+            {
+              "id": "content-text",
+              "name": "content_text",
+              "type": "string",
+              "value": "={{ 'Áudio recebido para transcrição local. Arquivo MIME: ' + ($json.mime_type || 'não informado') }}"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "type": "string",
+              "value": "audio"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "audio-local-transcription",
+      "name": "Áudio - Transcrição",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1808,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use esta base apenas para perguntas gerais que não sejam sobre Fatec, Fatec Bebedouro, vestibular ou cursos. Nunca use esta base para fatos da Fatec. Para perguntas marcadas como courseListFAQ, não faça busca RAG: responda somente com a informação de referência explícita no contexto do usuário. Para os demais assuntos da Fatec, use apenas trechos oficiais incluídos no contexto; se forem insuficientes, admita que não encontrou informação oficial.",
+        "options": {
+          "distanceStrategy": "cosine"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        688
+      ],
+      "id": "99208cba-88ab-4809-ae94-950606ad94d5",
+      "name": "RAG - Busca PGVector",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500,
+      "credentials": {
+        "postgres": {
+          "id": "b3xnM6ihufBx4HRm",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        272,
+        832
+      ],
+      "id": "fdf7da9b-63bf-4a36-a304-6c79c635778c",
+      "name": "RAG - Embeddings",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1500,
+      "credentials": {
+        "ollamaApi": {
+          "id": "Jb3hpDoEolendPGD",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "content-text",
+              "name": "content_text",
+              "type": "string",
+              "value": "={{ $json.caption || 'Documento enviado pelo usuário. O arquivo foi preservado para análise.' }}"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "type": "string",
+              "value": "document"
+            },
+            {
+              "id": "processing-mode",
+              "name": "processing_mode",
+              "type": "string",
+              "value": "user_document"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "user-document",
+      "name": "Documento - Chat",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1808,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "content-text",
+              "name": "content_text",
+              "type": "string",
+              "value": "={{ 'Instrução do usuário: ' + ($json.caption || '') + '\\n\\nDocumento enviado para análise.' }}"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "type": "string",
+              "value": "document_with_caption"
+            },
+            {
+              "id": "processing-mode",
+              "name": "processing_mode",
+              "type": "string",
+              "value": "user_document_with_caption"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "user-document-caption",
+      "name": "Documento - Legenda",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1808,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "content": "VISÃO GERAL\n\nFluxo multimodal: Chat Trigger → normalização → roteamento por tipo → processamento → agente Ollama.\n\nEntradas suportadas: texto, imagem, áudio e documento.\n\nDependências principais: Ollama, PostgreSQL/PGVector, Google Drive.",
+        "height": 280,
+        "width": 520
+      },
+      "id": "doc-overview",
+      "name": "DOC - Visão geral",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2544,
+        -336
+      ]
+    },
+    {
+      "parameters": {
+        "content": "ROTEAMENTO E FILAS: Chat Trigger e WAHA são entradas de usuário. WAHA passa por Redis FIFO por chat com message_id, received_at e queue_key. Documentos do chat seguem para Conteúdo - Consolidar e não são indexados automaticamente. Google Drive é a fonte da base: Drive Trigger, Download, Subworkflow de Documento Drive e PGVector. A serialização estrita por chat e o debounce ainda devem ser testados em produção.",
+        "height": 420,
+        "width": 820
+      },
+      "id": "doc-routing",
+      "name": "DOC - Roteamento e processamento",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        1152
+      ]
+    },
+    {
+      "parameters": {
+        "content": "AGENTE + CONTEXTO HÍBRIDO\n\nIA - Agente usa IA - Modelo, IA - Memória Redis e RAG - Busca PGVector para assuntos gerais. Perguntas sobre Fatec seguem busca oficial; a FAQ configurada de cursos da Fatec Bebedouro também passa pelo AI Agent, com a informação fornecida pelo responsável no prompt.\n\nRedis: contexto ativo das últimas 10 interações, separado por session_id e com TTL de 7 dias.\nPostgreSQL: histórico permanente em n8n_conversation_history, gravado em ramo paralelo após a resposta.\nPGVector: documentos e busca semântica; não armazena vetores das perguntas.\n\nA resposta do Chat é enviada por nó explícito (responseNodes); o arquivamento é executado em ramo paralelo.",
+        "height": 380,
+        "width": 760
+      },
+      "id": "doc-agent-rag",
+      "name": "DOC - Agente e RAG",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -928
+      ]
+    },
+    {
+      "parameters": {
+        "content": "RISCOS / PRÓXIMOS PASSOS\n\n1. Confirmar a credencial Ollama e testar o caminho textual completo.\n2. Testar PDF, DOCX, TXT e PDF escaneado; OCR pode ser necessário.\n3. Adicionar document_id/session_id/user_id aos metadados para filtrar o RAG.\n4. Configurar pasta/credencial do Google Drive; o trigger está desativado.\n5. Adicionar deduplicação/versionamento ao indexar documentos.\n6. Implementar transcrição real de áudio.\n7. Criar workflow de erro/alerta para falhas de produção.",
+        "height": 420,
+        "width": 900
+      },
+      "id": "doc-risks-next",
+      "name": "DOC - Riscos e próximos passos",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        1072
+      ]
+    },
+    {
+      "parameters": {
+        "sessionTTL": 604800,
+        "contextWindowLength": 10
+      },
+      "id": "redis-chat-memory",
+      "name": "IA - Memória Redis",
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.6,
+      "position": [
+        -80,
+        832
+      ],
+      "credentials": {
+        "redis": {
+          "id": "BHGPqGYPnd6PfxdA",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const original = $('Entrada - Normalizar').first().json;\nconst answer = $json.output ?? $json.text ?? $json.response ?? '';\nreturn { json: { session_id: original.session_id, user_id: original.user_id, conversation_id: original.conversation_id, message_id: original.message_id || original.waha_message_id || '', user_message: original.text || original.caption || original.chatInput || '', assistant_message: String(answer), source: original.source || 'chat', received_at: original.received_at || null, processed_at: new Date().toISOString() } };"
+      },
+      "id": "prepare-conversation-archive",
+      "name": "Preparar - Arquivo da Conversa",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "UBO6dbn3dAzDPTDw"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "archive-conversation",
+      "name": "Subworkflow - Arquivar Conversa",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        736,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Entrada - Normalizar').first().json.source || 'chat' }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "waha",
+              "id": "9c31f34c-eee3-4ce1-83b8-aadcaef1ef31"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-waha-response",
+      "name": "IF - Origem WAHA",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1664,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "GZsqUru4sVXy3I5l"
+        },
+        "workflowInputs": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "session",
+              "id": "session",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "chat_id",
+              "id": "chat_id",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "text",
+              "id": "text",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "waha_message_id",
+              "id": "waha_message_id",
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "chat_id": "={{ $('Entrada - Normalizar').first().json.chat_id }}",
+            "session": "={{ $('Entrada - Normalizar').first().json.session || 'default' }}",
+            "text": "={{ $json.output || $json.text || $json.response || 'Não consegui gerar uma resposta.' }}",
+            "waha_message_id": "={{ $('Entrada - Normalizar').first().json.waha_message_id || '' }}"
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "b825e586-e16e-43cc-9f78-1e83643e2df0",
+      "name": "WAHA - Subworkflow Saída",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1888,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "0b13d9f8-0980-49ce-8a96-18a137104b3d",
+      "name": "Entrada - WAHA",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2544,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst norm = (value) => String(value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase();\nconst containsAny = (text, terms) => terms.some((term) => text.includes(term));\nconst stopWords = new Set(['fatec','bebedouro','cps','qual','quais','onde','como','quando','porque','por','uma','das','dos','que','com','para','pela','pelo','tem','pode','posso','nao','sobre','esta','esse','essa','isso','aqui','meu','minha','seu','sua','voce','encontro','encontrar','site','oficial','e','o','a','os','as','de','do','da','no','na','nos','nas','um','ao','em','ser','sao','faz','fazer','mais','menos','me','eu','todas','outras','outra','unidades','rede','estado','cidades','lista','demais','qualquer','toda']);\nconst allFatecsTerms = ['todas as fatecs','todas fatecs','todas as fatec','outras fatecs','outra fatec','demais fatecs','qualquer fatec','todas as unidades','outras unidades','toda a rede','rede de fatecs','fatecs do estado','fatecs de sao paulo','lista de fatecs','lista das fatecs','outras cidades'];\nconst courseListTerms = ['quais cursos','quais sao os cursos','quais os cursos','cursos oferecidos','qual curso'];\nreturn items.map((item) => {\n  const parts = [item.json.text,item.json.caption,item.json.content_text].map((value) => String(value || '').trim()).filter(Boolean);\n  const searchQuestion = [...new Set(parts)].join(' ');\n  const normalized = norm(searchQuestion);\n  const isVestibular = containsAny(normalized,['vestibular','inscricao','inscrever','processo seletivo','edital','candidato','prova','calendario','classificacao','convocacao','chamada','isencao','taxa de inscricao']);\n  const isFatec = containsAny(normalized,['fatec','bebedouro','cps','tcc','monografia','estagio','area do aluno','aluno','biblioteca','livro','renovar','grade','matriz curricular','disciplina','documento','siga','academico','curso','logistica','agronegocio','big data','matricula','secretaria','historico','requerimento']);\n  const wantsAllFatecs = containsAny(normalized,allFatecsTerms);\n  const courseListFAQ = isFatec && !isVestibular && !wantsAllFatecs && containsAny(normalized,courseListTerms);\n  const searchRoute = isVestibular ? 'vestibular' : courseListFAQ ? 'general' : isFatec ? 'bebedouro' : 'general';\n  const terms = [...new Set(norm(searchQuestion).match(/[a-z0-9]{3,}/g) || [])].filter((term) => !stopWords.has(term)).slice(0,12);\n  return { json: { ...item.json, searchRoute, searchQuestion, searchQuery: terms.join(' '), wantsAllFatecs, courseListFAQ }, ...(item.binary ? { binary: item.binary } : {}) };\n});"
+      },
+      "id": "aa6ccf37-36bf-42f2-ad6a-4f45620a3132",
+      "name": "Classificar - Fonte",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -832,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.searchRoute }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "vestibular"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "vestibular"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.searchRoute }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "bebedouro"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "fatec_bebedouro"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.courseListFAQ ? 'faq_cursos' : 'other' }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "faq_cursos"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "faq_cursos"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "general"
+        }
+      },
+      "id": "bdc49f8b-bc4d-4f4c-8936-81ea23c6ec6c",
+      "name": "Roteador - Fonte",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://searxng:8080/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ 'site:fatecbb.cps.sp.gov.br ' + $json.searchQuery }}"
+            },
+            {
+              "name": "engines",
+              "value": "google,duckduckgo,bing"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            }
+          ]
+        },
+        "options": {
+          "response": {}
+        }
+      },
+      "id": "7bc360f8-10e9-47dd-96cb-57e3d6812947",
+      "name": "Buscar - Fatec Bebedouro",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        320,
+        224
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "http://searxng:8080/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ 'site:vestibular.fatec.sp.gov.br ' + $json.searchQuery }}"
+            },
+            {
+              "name": "engines",
+              "value": "google,duckduckgo,bing"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            }
+          ]
+        },
+        "options": {
+          "response": {}
+        }
+      },
+      "id": "0df7735f-a7a2-4621-89df-1aa2589d643c",
+      "name": "Buscar - Vestibular",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        272,
+        64
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst body = response.body ?? response;\nconst original = $('Classificar - Fonte').first().json;\nconst norm = (value) => String(value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase();\nconst allowedHost = original.searchRoute === 'vestibular' ? 'vestibular.fatec.sp.gov.br' : 'fatecbb.cps.sp.gov.br';\nconst parseUrl = (value) => {\n  const raw = String(value || '').trim().toLowerCase();\n  if (!raw.startsWith('https://') && !raw.startsWith('http://')) return null;\n  const rest = raw.slice(raw.indexOf('://') + 3);\n  const slash = rest.indexOf('/');\n  return { host: slash < 0 ? rest.split(/[?#]/)[0] : rest.slice(0,slash) };\n};\nconst question = norm(original.searchQuestion || original.searchQuery);\nconst topics = ['big data','agronegocio','monografia','tcc','estagio','biblioteca','renovar','disciplina','matriz curricular','grade curricular','documento','siga','vestibular','inscricao','processo seletivo','edital','prova','calendario'];\nconst requiredTopics = topics.filter((term) => question.includes(term));\nconst stop = new Set(['fatec','bebedouro','cps','sobre','para','como','onde','qual','quais','quando','porque','uma','das','dos','que','com','tem','pode','posso','site','oficial','fazer','esta','esse','essa','isso','aqui','meu','minha','seu','sua','no','na','do','da','pela','pelo']);\nconst queryTokens = [...new Set(norm(original.searchQuery).match(/[a-z0-9]{4,}/g) || [])].filter((token) => !stop.has(token));\nconst candidates = Array.isArray(body.results) ? body.results : [];\nconst results = candidates.filter((result) => {\n  const parsed = parseUrl(result.url);\n  if (!parsed || parsed.host !== allowedHost) return false;\n  const content = String(result.content || '').trim();\n  if (content.length < 20 || /pagina oficial de referencia|busca nao retornou trecho|placeholder/i.test(norm(content))) return false;\n  const text = norm(String(result.title || '') + ' ' + content);\n  if (requiredTopics.some((term) => !text.includes(term))) return false;\n  const nonTopicTokens = queryTokens.filter((token) => !requiredTopics.some((term) => term.includes(token)));\n  const matches = nonTopicTokens.filter((token) => text.includes(token)).length;\n  return nonTopicTokens.length === 0 || matches >= Math.min(1, nonTopicTokens.length);\n});\nreturn [{ json: { ...original, sourceLabel: allowedHost, results, foundEvidence: results.length > 0 } }];"
+      },
+      "id": "ce964fad-f072-4dc7-bd61-88727c0bf3e6",
+      "name": "Validar - Resultado Primário",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.foundEvidence ? 'found' : 'fallback' }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "found"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "found"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "fallback"
+        }
+      },
+      "id": "e8bd7f11-0d56-4480-8ddf-9fc2ec1e9725",
+      "name": "Roteador - Resultado Primário",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://searxng:8080/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ ($('Classificar - Fonte').first().json.wantsAllFatecs ? 'site:www.cps.sp.gov.br/fatecs ' : '(site:www.cps.sp.gov.br/fatecs/fatec-bebedouro-jorge-caram-sabbag OR site:www.cps.sp.gov.br/cursos-fatec/big-data-no-agronegocio OR site:www.cps.sp.gov.br/cursos-fatec/logistica) ') + $('Classificar - Fonte').first().json.searchQuery }}"
+            },
+            {
+              "name": "engines",
+              "value": "google,duckduckgo,bing"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            }
+          ]
+        },
+        "options": {
+          "response": {}
+        }
+      },
+      "id": "5ac5f3a1-0ef8-41ed-b7c7-77e28f5fab40",
+      "name": "Buscar - CPS Fatecs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1344,
+        128
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst body = response.body ?? response;\nconst original = $('Classificar - Fonte').first().json;\nconst wantsAll = !!original.wantsAllFatecs;\nconst norm = (value) => String(value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase();\nconst question = norm(original.searchQuestion || original.searchQuery);\nconst topics = ['big data','agronegocio','monografia','tcc','estagio','biblioteca','renovar','disciplina','matriz curricular','grade curricular','documento','siga','vestibular','inscricao','processo seletivo','edital','prova','calendario'];\nconst requiredTopics = topics.filter((term) => question.includes(term));\nconst stop = new Set(['fatec','bebedouro','cps','sobre','para','como','onde','qual','quais','quando','porque','uma','das','dos','que','com','tem','pode','posso','site','oficial','fazer','esta','esse','essa','isso','aqui','meu','minha','seu','sua','no','na','do','da','pela','pelo']);\nconst queryTokens = [...new Set(norm(original.searchQuery).match(/[a-z0-9]{4,}/g) || [])].filter((token) => !stop.has(token));\nconst parseUrl = (value) => {\n  const raw = String(value || '').trim().toLowerCase();\n  if (!raw.startsWith('https://') && !raw.startsWith('http://')) return null;\n  const rest = raw.slice(raw.indexOf('://') + 3);\n  const slash = rest.indexOf('/');\n  return { host: slash < 0 ? rest.split(/[?#]/)[0] : rest.slice(0,slash), path: slash < 0 ? '/' : rest.slice(slash).split(/[?#]/)[0] };\n};\nconst bebedouroPaths = ['/fatecs/fatec-bebedouro-jorge-caram-sabbag','/cursos-fatec/big-data-no-agronegocio','/cursos-fatec/logistica'];\nconst pathAllowed = (path) => wantsAll ? path === '/fatecs' || path.startsWith('/fatecs/') : bebedouroPaths.some((prefix) => path === prefix || path.startsWith(prefix + '/'));\nconst candidates = Array.isArray(body.results) ? body.results : [];\nconst results = candidates.filter((result) => {\n  const parsed = parseUrl(result.url);\n  if (!parsed || parsed.host !== 'www.cps.sp.gov.br' || !pathAllowed(parsed.path)) return false;\n  const content = String(result.content || '').trim();\n  if (content.length < 20 || /pagina oficial de referencia|busca nao retornou trecho|placeholder/i.test(norm(content))) return false;\n  const text = norm(String(result.title || '') + ' ' + content);\n  if (requiredTopics.some((term) => !text.includes(term))) return false;\n  const nonTopicTokens = queryTokens.filter((token) => !requiredTopics.some((term) => term.includes(token)));\n  const matches = nonTopicTokens.filter((token) => text.includes(token)).length;\n  return nonTopicTokens.length === 0 || matches >= Math.min(1, nonTopicTokens.length);\n});\nreturn [{ json: { ...original, sourceLabel: wantsAll ? 'www.cps.sp.gov.br/fatecs (todas as unidades)' : 'www.cps.sp.gov.br (paginas da Fatec Bebedouro)', results, foundEvidence: results.length > 0 } }];"
+      },
+      "id": "b5db03ad-652d-4fc4-a00d-4ecac7d648eb",
+      "name": "Validar - Resultado CPS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst wantsAll = !!item.wantsAllFatecs;\nconst norm = (value) => String(value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase();\nconst parseUrl = (value) => {\n  const raw = String(value || '').trim().toLowerCase();\n  if (!raw.startsWith('https://') && !raw.startsWith('http://')) return null;\n  const rest = raw.slice(raw.indexOf('://') + 3);\n  const slash = rest.indexOf('/');\n  return { host: slash < 0 ? rest.split(/[?#]/)[0] : rest.slice(0,slash), path: slash < 0 ? '/' : rest.slice(slash).split(/[?#]/)[0] };\n};\nconst cpsPaths = ['/fatecs/fatec-bebedouro-jorge-caram-sabbag','/cursos-fatec/big-data-no-agronegocio','/cursos-fatec/logistica'];\nconst cpsPathAllowed = (path) => wantsAll ? path === '/fatecs' || path.startsWith('/fatecs/') : cpsPaths.some((prefix) => path === prefix || path.startsWith(prefix + '/'));\nconst candidates = Array.isArray(item.results) ? item.results : [];\nconst results = item.foundEvidence === true ? candidates.filter((result) => {\n  const parsed = parseUrl(result.url);\n  if (!parsed) return false;\n  const hostAllowed = parsed.host === 'fatecbb.cps.sp.gov.br' || parsed.host === 'vestibular.fatec.sp.gov.br' || (parsed.host === 'www.cps.sp.gov.br' && cpsPathAllowed(parsed.path));\n  const content = String(result.content || '').trim();\n  return hostAllowed && content.length >= 20 && !/pagina oficial de referencia|busca nao retornou trecho|placeholder/i.test(norm(content));\n}).slice(0,4) : [];\nconst hasValidatedEvidence = results.length > 0;\nlet output;\nif (!hasValidatedEvidence) {\n  output = 'Não encontrei conteúdo textual oficial suficientemente relevante nas fontes permitidas para responder com segurança. Não vou inferir essa informação. Tente novamente mais tarde ou consulte a unidade.';\n} else {\n  output = 'Encontrei estes trechos nas fontes oficiais permitidas. Para evitar informações não confirmadas, reproduzo os trechos e links da busca:\\n\\n' + results.map((result,index) => {\n    const clean = (value) => String(value || '').replaceAll(String.fromCharCode(10),' ').replaceAll(String.fromCharCode(13),' ').trim();\n    return `${index+1}. **${clean(result.title || 'Fonte oficial')}**\\n   Trecho: ${clean(result.content).slice(0,900)}\\n   Fonte: [${result.url}](${result.url})`;\n  }).join('\\n\\n');\n}\nreturn [{ json: { ...item, results: hasValidatedEvidence ? results : [], foundEvidence: hasValidatedEvidence, responseType: hasValidatedEvidence ? 'validated_search_excerpt' : 'insufficient_evidence', answerBasis: hasValidatedEvidence ? 'validated_official_excerpt' : 'insufficient_official_evidence', output } }];"
+      },
+      "id": "b63c8971-67be-47b2-9b2c-60987290292e",
+      "name": "Formatar - Fontes Oficiais",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.output || 'Não encontrei informação suficiente para responder.' }}",
+        "options": {}
+      },
+      "id": "3f0a15b7-504d-4a2d-95b4-f8b8c57e0fae",
+      "name": "Responder - Chat",
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1.3,
+      "position": [
+        1968,
+        640
+      ],
+      "webhookId": "8534c5e6-ae41-46d8-8df7-cdefac228854"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst officialSources = {\n  version: '1.0',\n  atualizado_em: '2026-09-26',\n  regra_escopo: 'Por padrao, toda busca fica restrita as paginas oficiais da Fatec Bebedouro (fatecbb.cps.sp.gov.br e a pagina da unidade dentro de www.cps.sp.gov.br/fatecs). O diretorio www.cps.sp.gov.br/fatecs com todas as unidades so e usado quando o usuario pede explicitamente por outras unidades ou por todas as Fatecs.',\n  search_model: {\n    endpoint: 'http://searxng:8080/search',\n    method: 'GET',\n    engines: ['google', 'duckduckgo', 'bing'],\n    format: 'json',\n    query_pattern: 'site:{dominio}{caminho} {termos_da_pergunta}'\n  },\n  response_model: {\n    campo_resultados: 'body.results[]',\n    campos_usados: ['title', 'content', 'url'],\n    validacao: 'cada resultado so e aceito se o host (e o caminho, quando aplicavel) bater exatamente com um item de allowed_sites; qualquer outro dominio e descartado antes de chegar ao agente',\n    limite_resultados: 4\n  },\n  allowed_sites: [\n    { id: 'fatecbb', label: 'Fatec Bebedouro - site oficial da unidade', domain: 'fatecbb.cps.sp.gov.br', escopo: 'bebedouro', prioridade: 1 },\n    { id: 'vestibular', label: 'Vestibular Fatec - Centro Paula Souza (processo seletivo)', domain: 'vestibular.fatec.sp.gov.br', escopo: 'vestibular', prioridade: 2 },\n    { id: 'cps_bebedouro', label: 'Pagina institucional da Fatec Bebedouro no portal do CPS', domain: 'www.cps.sp.gov.br', caminho: '/fatecs/fatec-bebedouro-jorge-caram-sabbag', escopo: 'bebedouro', prioridade: 3 },\n    { id: 'cps_curso_bigdata', label: 'Pagina oficial do curso Big Data no Agronegocio (CPS)', domain: 'www.cps.sp.gov.br', caminho: '/cursos-fatec/big-data-no-agronegocio', escopo: 'bebedouro', prioridade: 3 },\n    { id: 'cps_curso_logistica', label: 'Pagina oficial do curso Logistica (CPS)', domain: 'www.cps.sp.gov.br', caminho: '/cursos-fatec/logistica', escopo: 'bebedouro', prioridade: 3 },\n    { id: 'cps_todas_fatecs', label: 'Diretorio de todas as Fatecs no portal do CPS - somente quando pedido explicitamente', domain: 'www.cps.sp.gov.br', caminho: '/fatecs', escopo: 'todas_fatecs', prioridade: 4 }\n  ],\n  paginas_curadas_bebedouro: [\n    { titulo: 'Cursos oferecidos pela Fatec Bebedouro', url: 'https://fatecbb.cps.sp.gov.br/' },\n    { titulo: 'Curso Logistica - Fatec Bebedouro', url: 'https://fatecbb.cps.sp.gov.br/logistica-3/' },\n    { titulo: 'Curso Big Data no Agronegocio - Fatec Bebedouro', url: 'https://fatecbb.cps.sp.gov.br/big-data-no-agronegocio/' },\n    { titulo: 'Pagina oficial do curso Big Data no Agronegocio (CPS)', url: 'https://www.cps.sp.gov.br/cursos-fatec/big-data-no-agronegocio/' },\n    { titulo: 'Pagina oficial do curso Logistica (CPS)', url: 'https://www.cps.sp.gov.br/cursos-fatec/logistica/' },\n    { titulo: 'Matriz curricular Logistica', url: 'https://fatecbb.cps.sp.gov.br/grade-logistica/' },\n    { titulo: 'Matriz curricular Big Data no Agronegocio (2026)', url: 'https://fatecbb.cps.sp.gov.br/grade-big-data-no-agronegocio-nova-2026/' },\n    { titulo: 'Area do aluno - Fatec Bebedouro', url: 'https://fatecbb.cps.sp.gov.br/area-do-aluno/' },\n    { titulo: 'Biblioteca - Fatec Bebedouro', url: 'https://fatecbb.cps.sp.gov.br/biblioteca-2/' },\n    { titulo: 'Quem somos - Fatec Bebedouro', url: 'https://fatecbb.cps.sp.gov.br/quem-somos/' },\n    { titulo: 'Pagina institucional da Fatec Bebedouro no portal do CPS', url: 'https://www.cps.sp.gov.br/fatecs/fatec-bebedouro-jorge-caram-sabbag/' },\n    { titulo: 'Site oficial do vestibular das Fatecs', url: 'https://vestibular.fatec.sp.gov.br/home/' }\n  ],\n  sites_nunca_consultados: 'Qualquer dominio fora de allowed_sites deve ser ignorado mesmo que apareca nos resultados do SearXNG - por exemplo Wikipedia, blogs, cursinhos ou agregadores nao oficiais.'\n};\nreturn items.map((item) => ({ json: { ...item.json, official_sources: officialSources }, ...(item.binary ? { binary: item.binary } : {}) }));"
+      },
+      "id": "9a4d784b-37ed-4b42-a475-2d7217f6e391",
+      "name": "Config - Fontes Oficiais",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "content": "CONFIG - FONTES OFICIAIS\n\nNode com JSON central: lista os dominios/paths permitidos (fatecbb.cps.sp.gov.br, vestibular.fatec.sp.gov.br, a pagina da Bebedouro em www.cps.sp.gov.br/fatecs, e as paginas dos 2 cursos dela em cps.sp.gov.br/cursos-fatec) e as paginas curadas usadas como referencia quando o SearXNG nao acha evidencia. Nenhum outro dominio (ex.: Wikipedia) passa pela validacao em Validar - Resultado Primario / Validar - Resultado CPS / Formatar - Fontes Oficiais.",
+        "height": 260,
+        "width": 640
+      },
+      "id": "a25dd41c-66e2-4114-9528-60f678032c76",
+      "name": "NOTA - Config Fontes Oficiais",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        1248
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'Pergunta do usuário: ' + ($json.searchQuestion || $json.content_text || $json.text || '') + '\\n\\nInformação fornecida pelo responsável: os cursos oferecidos na Fatec Bebedouro são Logística e Big Data no Agronegócio.' }}",
+        "options": {
+          "systemMessage": "Você é um assistente em português do Brasil. Responda diretamente à pergunta do usuário em uma frase natural. Para esta pergunta, considere como fonte factual exclusivamente a informação explícita fornecida pelo responsável no contexto: a Fatec Bebedouro oferece Logística e Big Data no Agronegócio. Diga apenas esses dois cursos, sem acrescentar outros cursos nem explicações não fornecidas. Não pesquise, não use RAG e não consulte memória.",
+          "maxIterations": 2
+        }
+      },
+      "id": "a5391122-4aa6-4850-91be-67ba4210308b",
+      "name": "IA - Agente Cursos",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -336,
+        448
+      ]
+    }
+  ],
+  "pinData": {
+    "When chat message received": [
+      {
+        "json": {
+          "action": "sendMessage",
+          "sessionId": "287d61d7ec26470aa858e62720c606d1",
+          "chatInput": "Oi, tudo bem?"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Entrada - Chat": {
+      "main": [
+        [
+          {
+            "node": "Entrada - Normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Entrada - Normalizar": {
+      "main": [
+        [
+          {
+            "node": "Roteador - Tipo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Roteador - Tipo": {
+      "main": [
+        [
+          {
+            "node": "Texto - Processar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Imagem - Ollama",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Imagem - Legenda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Áudio - Transcrição",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Documento - Chat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Documento - Legenda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Texto - Processar": {
+      "main": [
+        [
+          {
+            "node": "Conteúdo - Consolidar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Imagem - Ollama": {
+      "main": [
+        [
+          {
+            "node": "Conteúdo - Consolidar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Imagem - Legenda": {
+      "main": [
+        [
+          {
+            "node": "Conteúdo - Consolidar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Áudio - Transcrição": {
+      "main": [
+        [
+          {
+            "node": "Conteúdo - Consolidar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fallback": {
+      "main": [
+        [
+          {
+            "node": "Conteúdo - Consolidar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA - Modelo": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA - Agente",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "IA - Agente Cursos",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG - Busca PGVector": {
+      "ai_tool": [
+        [
+          {
+            "node": "IA - Agente",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG - Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "RAG - Busca PGVector",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA - Memória Redis": {
+      "ai_memory": [
+        [
+          {
+            "node": "IA - Agente",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar - Arquivo da Conversa": {
+      "main": [
+        [
+          {
+            "node": "Subworkflow - Arquivar Conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Documento - Chat": {
+      "main": [
+        [
+          {
+            "node": "Conteúdo - Consolidar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Documento - Legenda": {
+      "main": [
+        [
+          {
+            "node": "Conteúdo - Consolidar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Origem WAHA": {
+      "main": [
+        [
+          {
+            "node": "WAHA - Subworkflow Saída",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder - Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Entrada - WAHA": {
+      "main": [
+        [
+          {
+            "node": "Entrada - Normalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conteúdo - Consolidar": {
+      "main": [
+        [
+          {
+            "node": "Classificar - Fonte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Roteador - Fonte": {
+      "main": [
+        [
+          {
+            "node": "Buscar - Vestibular",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar - Fatec Bebedouro",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA - Agente Cursos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA - Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar - Vestibular": {
+      "main": [
+        [
+          {
+            "node": "Validar - Resultado Primário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar - Fatec Bebedouro": {
+      "main": [
+        [
+          {
+            "node": "Validar - Resultado Primário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar - Resultado Primário": {
+      "main": [
+        [
+          {
+            "node": "Roteador - Resultado Primário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Roteador - Resultado Primário": {
+      "main": [
+        [
+          {
+            "node": "Formatar - Fontes Oficiais",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar - CPS Fatecs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar - CPS Fatecs": {
+      "main": [
+        [
+          {
+            "node": "Validar - Resultado CPS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar - Resultado CPS": {
+      "main": [
+        [
+          {
+            "node": "Formatar - Fontes Oficiais",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar - Fontes Oficiais": {
+      "main": [
+        [
+          {
+            "node": "IF - Origem WAHA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar - Arquivo da Conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA - Agente": {
+      "main": [
+        [
+          {
+            "node": "IF - Origem WAHA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar - Arquivo da Conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config - Fontes Oficiais": {
+      "main": [
+        [
+          {
+            "node": "Roteador - Fonte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classificar - Fonte": {
+      "main": [
+        [
+          {
+            "node": "Config - Fontes Oficiais",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA - Agente Cursos": {
+      "main": [
+        [
+          {
+            "node": "IF - Origem WAHA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar - Arquivo da Conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "ee7462c8-178f-4f6b-8b19-79516c837979",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5e6fad50a2a8939124ebf79f7fbc729e5d52c2e04b1319c499246730993f9755"
+  },
+  "nodeGroups": [],
+  "id": "Q49jTFzq9QDPU5AO",
+  "tags": []
+}

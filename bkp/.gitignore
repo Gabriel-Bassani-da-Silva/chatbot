@@ -1,0 +1,5 @@
+# Ignora todos os backups gerados (podem conter dados sensíveis)
+*
+
+# Mas mantém a própria pasta bkp e este arquivo no git
+!.gitignore

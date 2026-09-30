@@ -1,0 +1,275 @@
+name: chatbot_n8n
+
+# Limita o crescimento de logs json-file sem alterar o comportamento da aplicação.
+x-logging: &default-logging
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+volumes:
+  # Volumes operacionais persistentes: nunca versionar seu conteúdo.
+  n8n_data:
+  pgdata:
+  redis_data:
+  waha_sessions:
+  waha_media:
+  caddy_data:
+  caddy_config:
+  chatwoot_storage:
+
+networks:
+  # Rede do app/proxy/túnel; permite saída para serviços externos.
+  edge: # Somente serviços de dados; n8n acessa por sua segunda interface.
+
+  backend:
+    # 'internal: true' removido para que o port mapping funcione
+
+  waha_apps:
+    # Rede interna dedicada à fila do WAHA Apps.
+    internal: true
+
+x-chatwoot-environment: &chatwoot-environment 
+  NODE_ENV: production
+  RAILS_ENV: production
+  INSTALLATION_ENV: docker
+  SECRET_KEY_BASE: ${CHATWOOT_SECRET_KEY_BASE:?CHATWOOT_SECRET_KEY_BASE is required}
+  FRONTEND_URL: ${CHATWOOT_FRONTEND_URL:-http://localhost:3001}
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_DATABASE: ${CHATWOOT_POSTGRES_DATABASE:-chatwoot_production}
+  POSTGRES_USERNAME: ${CHATWOOT_POSTGRES_USERNAME:?CHATWOOT_POSTGRES_USERNAME is required}
+  POSTGRES_PASSWORD: ${CHATWOOT_POSTGRES_PASSWORD:?CHATWOOT_POSTGRES_PASSWORD is required}
+  REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/1
+  REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+  ACTIVE_STORAGE_SERVICE: local
+  ENABLE_ACCOUNT_SIGNUP: "false"
+  RAILS_LOG_TO_STDOUT: "true"
+
+x-chatwoot-common: &chatwoot-common
+  image: chatwoot/chatwoot:${CHATWOOT_VERSION:?CHATWOOT_VERSION is required}
+  restart: unless-stopped
+  environment: *chatwoot-environment
+  volumes:
+    - chatwoot_storage:/app/storage
+  networks:
+    - edge
+    - backend
+
+services:
+
+  postgres:
+    image: pgvector/pgvector:${POSTGRES_VERSION:?POSTGRES_VERSION is required}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Executado apenas na inicialização de um volume PostgreSQL vazio.
+      - ./postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      # Administração local; não publicar na interface externa.
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -h localhost -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - backend
+    <<: *default-logging
+
+  redis:
+    image: redis:${REDIS_VERSION:?REDIS_VERSION is required}
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+    # A senha não é escrita diretamente no campo command do Compose.
+    command: [ "sh", "-c", "exec redis-server --requirepass \"$${REDIS_PASSWORD}\" --appendonly yes" ]
+    ports:
+      # Disponível somente localmente para diagnóstico/administração.
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli --pass \"$${REDIS_PASSWORD}\" ping | grep -q PONG" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+      - waha_apps
+    <<: *default-logging
+
+  n8n:
+    image: n8nio/n8n:${N8N_VERSION:?N8N_VERSION is required}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      # Acesso local de manutenção; o público segue por Caddy/Cloudflare Tunnel.
+      - "127.0.0.1:5678:5678"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB:?POSTGRES_DB is required}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      # Passa o nome atual ao n8n, aceitando WEBHOOK_URL legado no .env.
+      N8N_WEBHOOK_URL: "${N8N_WEBHOOK_URL:-${WEBHOOK_URL:?N8N_WEBHOOK_URL or WEBHOOK_URL is required}}"
+      N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL:?N8N_EDITOR_BASE_URL is required}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY is required}
+      N8N_PROXY_HOPS: ${N8N_PROXY_HOPS:-1}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-true}
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: ${N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS:-true}
+      N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE: ${N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE:-true}
+      N8N_COMMUNITY_PACKAGES_MANAGED_BY_ENV: "true"
+      # Aspas duplas permitem interpolar a versão definida em versions.env.
+      N8N_COMMUNITY_PACKAGES: "[{\"name\":\"@devlikeapro/n8n-nodes-waha\",\"version\":\"${N8N_NODES_WAHA_VERSION:?N8N_NODES_WAHA_VERSION is required}\"}]"
+      N8N_DIAGNOSTICS_ENABLED: ${N8N_DIAGNOSTICS_ENABLED:-false}
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-America/Sao_Paulo}
+      TZ: ${TZ:-America/Sao_Paulo}
+      NODE_FUNCTION_ALLOW_BUILTIN: ${NODE_FUNCTION_ALLOW_BUILTIN:-crypto,buffer,util}
+      NODE_FUNCTION_ALLOW_EXTERNAL: ${NODE_FUNCTION_ALLOW_EXTERNAL:-}
+      # Conserva execução com erro e poda execuções antigas/bem-sucedidas.
+      EXECUTIONS_DATA_PRUNE: ${EXECUTIONS_DATA_PRUNE:-true}
+      EXECUTIONS_DATA_MAX_AGE: ${EXECUTIONS_DATA_MAX_AGE:-168}
+      EXECUTIONS_DATA_PRUNE_MAX_COUNT: ${EXECUTIONS_DATA_PRUNE_MAX_COUNT:-50000}
+      EXECUTIONS_DATA_SAVE_ON_SUCCESS: ${EXECUTIONS_DATA_SAVE_ON_SUCCESS:-none}
+      EXECUTIONS_DATA_SAVE_ON_ERROR: ${EXECUTIONS_DATA_SAVE_ON_ERROR:-all}
+      EXECUTIONS_DATA_SAVE_ON_PROGRESS: ${EXECUTIONS_DATA_SAVE_ON_PROGRESS:-false}
+    networks:
+      - edge
+      - backend
+    <<: *default-logging
+
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local:${POSTGRES_BACKUP_VERSION:?POSTGRES_BACKUP_VERSION is required}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_BACKUP_DATABASES:-${POSTGRES_DB:?POSTGRES_DB is required}}
+      SCHEDULE: ${POSTGRES_BACKUP_SCHEDULE:-0 3 * * *}
+      BACKUP_KEEP_DAYS: ${POSTGRES_BACKUP_KEEP_DAYS:-7}
+      BACKUP_KEEP_WEEKS: ${POSTGRES_BACKUP_KEEP_WEEKS:-0}
+      BACKUP_KEEP_MONTHS: ${POSTGRES_BACKUP_KEEP_MONTHS:-0}
+      HEALTHCHECK_PORT: 8080
+    volumes:
+      # Diretório operacional: requer cópia externa e teste periódico de restauração.
+      - ./bkp:/backups
+    networks:
+      - backend
+    <<: *default-logging
+
+  waha:
+    image: devlikeapro/waha:${WAHA_VERSION:?WAHA_VERSION is required}
+    restart: unless-stopped
+    environment:
+      WHATSAPP_DEFAULT_ENGINE: ${WHATSAPP_DEFAULT_ENGINE:-WEBJS}
+      WAHA_API_KEY: ${WAHA_API_KEY:?WAHA_API_KEY is required}
+      # WAHA Apps: integração nativa com Chatwoot via Redis (disponível no tier CORE).
+      WAHA_APPS_ENABLED: "true"
+      WAHA_APPS_ON: "chatwoot"
+      WAHA_API_KEY_PLAIN: ${WAHA_API_KEY_PLAIN:?WAHA_API_KEY_PLAIN is required}
+      REDIS_URL: "redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/2"
+      WAHA_DASHBOARD_ENABLED: ${WAHA_DASHBOARD_ENABLED:-true}
+      WAHA_DASHBOARD_USERNAME: ${WAHA_DASHBOARD_USERNAME:?WAHA_DASHBOARD_USERNAME is required}
+      WAHA_DASHBOARD_PASSWORD: ${WAHA_DASHBOARD_PASSWORD:?WAHA_DASHBOARD_PASSWORD is required}
+      WHATSAPP_SWAGGER_ENABLED: ${WHATSAPP_SWAGGER_ENABLED:-false}
+    volumes:
+      - waha_sessions:/app/.sessions
+      - waha_media:/app/.media
+    ports:
+      # QR Code/dashboard acessível somente no próprio host.
+      - "127.0.0.1:${WAHA_PORT:-3000}:3000"
+    networks:
+      - edge
+      - waha_apps
+    <<: *default-logging
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      n8n:
+        condition: service_started
+      waha:
+        condition: service_started
+    # Caddy escutando na porta local 80, e recebendo do Cloudflare Tunnel internamente.
+    ports:
+      - "127.0.0.1:80:80"
+    environment:
+      - DOMAIN=${DOMAIN:?DOMAIN is required}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./public:/srv/public:ro
+    networks:
+      - edge
+    <<: *default-logging
+
+  cloudflared:
+    image: cloudflare/cloudflared:${CLOUDFLARED_VERSION:?CLOUDFLARED_VERSION is required}
+    restart: unless-stopped
+    depends_on:
+      caddy:
+        condition: service_started
+    command: [ "tunnel", "run" ]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN is required}
+    networks:
+      - edge
+    <<: *default-logging
+
+# sandbox-certs, sandbox-api e sandbox-runner-1 permanecem opcionais.
+# Habilite-os somente com a configuração mTLS documentada.
+
+  chatwoot-web:
+    <<: *chatwoot-common
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: bundle exec rails s -p 3000 -b 0.0.0.0
+    ports:
+      - "127.0.0.1:${CHATWOOT_PORT:-3001}:3000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  chatwoot-worker:
+    <<: *chatwoot-common
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

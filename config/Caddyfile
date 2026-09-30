@@ -1,0 +1,28 @@
+# O Caddy escuta na :80 e roteia pelo hostname.
+# O Cloudflare Tunnel deve ter duas Public Hostnames apontando para http://caddy:80:
+#   - {$DOMAIN}        → http://caddy:80
+#   - chatwoot.{$DOMAIN} → http://caddy:80
+
+# Domínio principal — somente a página inicial
+{$DOMAIN}:80 {
+    # Página inicial estática (index.html, style.css)
+    handle {
+        root * /srv/public
+        file_server
+    }
+}
+
+# Subdomínio dedicado ao n8n
+n8n.{$DOMAIN}:80 {
+    reverse_proxy n8n:5678 {
+        # Necessário para WebSocket (editor em tempo real) e webhooks
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto https
+    }
+}
+
+# Subdomínio dedicado ao Chatwoot
+chatwoot.{$DOMAIN}:80 {
+    reverse_proxy chatwoot-web:3000
+}
