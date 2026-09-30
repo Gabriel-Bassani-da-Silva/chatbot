@@ -1,0 +1,39 @@
+# =============================================================================
+# .dockerignore
+# Evita que arquivos desnecessarios ou sensiveis entrem na imagem do Caddy
+# (unico servico com build: . no compose.yml)
+# =============================================================================
+
+# Controle de versao
+.git
+.gitignore
+
+# Segredos
+.env
+versions.env
+
+# Backups
+bkp/
+
+# Documentacao
+docs/
+
+# Scripts de administracao
+*.ps1
+
+# Dados de runtime
+pgdata/
+n8n_data/
+
+# Configuracoes de IDE e sistema
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+
+# Arquivos do projeto
+README.md
+Makefile
+compose.yml
+.env.example
+.agents/

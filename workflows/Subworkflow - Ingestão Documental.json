@@ -1,0 +1,204 @@
+{
+  "name": "Subworkflow - Ingestão Documental",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "5016f464-742d-4290-84a0-c8241de2ba6b",
+      "name": "Entrada - Subworkflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "embeddingBatchSize": 20,
+        "options": {
+          "collection": {
+            "values": {}
+          }
+        }
+      },
+      "id": "31a943cd-2855-43e8-94d5-25a2e5fd5ca1",
+      "name": "RAG - Indexar PGVector",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        304
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "b3xnM6ihufBx4HRm",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "id": "8bb8c3d5-05f5-4708-b8d2-aca4b86e2421",
+      "name": "RAG - Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        768,
+        480
+      ],
+      "credentials": {
+        "ollamaApi": {
+          "id": "Jb3hpDoEolendPGD",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {
+          "splitPages": true,
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "source",
+                "value": "={{ $json.source || 'google_drive' }}"
+              },
+              {
+                "name": "file_name",
+                "value": "={{ $json.file_name || $binary.data.fileName || $json.name || '' }}"
+              },
+              {
+                "name": "mime_type",
+                "value": "={{ $json.mime_type || $binary.data.mimeType || '' }}"
+              },
+              {
+                "name": "session_id",
+                "value": "={{ $json.session_id || '' }}"
+              },
+              {
+                "name": "user_id",
+                "value": "={{ $json.user_id || '' }}"
+              },
+              {
+                "name": "document_id",
+                "value": "={{ $json.document_id || $json.id || '' }}"
+              },
+              {
+                "name": "source_event_id",
+                "value": "={{ $json.source_event_id || $json.id || '' }}"
+              },
+              {
+                "name": "ingested_at",
+                "value": "={{ $json.ingested_at || $now }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "ed1602fd-74f3-4150-b420-2c946a146e7e",
+      "name": "RAG - Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "content": "INGESTÃO DOCUMENTAL\n\nRecebe binário do workflow chamador, extrai e divide o documento, gera embeddings e grava no PostgreSQL/PGVector. Metadados de origem, arquivo, sessão, usuário e documento são preservados.",
+        "height": 304
+      },
+      "id": "3e9e1f73-baa6-417c-abbe-8dc9062e6d36",
+      "name": "Sticky Note c1413859",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const original = $('Entrada - Subworkflow').first();\nreturn { json: { ...original.json, indexed: true }, binary: original.binary };"
+      },
+      "id": "return-original-item",
+      "name": "Retornar Item Original",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        304
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entrada - Subworkflow": {
+      "main": [
+        [
+          {
+            "node": "RAG - Indexar PGVector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG - Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "RAG - Indexar PGVector",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG - Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "RAG - Indexar PGVector",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG - Indexar PGVector": {
+      "main": [
+        [
+          {
+            "node": "Retornar Item Original",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "7d4cfa53-6196-4651-8064-344480b0c02b",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "5e6fad50a2a8939124ebf79f7fbc729e5d52c2e04b1319c499246730993f9755"
+  },
+  "nodeGroups": [],
+  "id": "byX5rexb7BkmjeKI",
+  "tags": []
+}
