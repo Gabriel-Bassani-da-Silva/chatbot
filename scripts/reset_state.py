@@ -27,7 +27,7 @@ def main() -> None:
     print("[INFO] Limpando variáveis de estado do banco de dados no .env...")
     update_env(env_path, VOLATILE_KEYS)
     print("[SUCESSO] Variáveis dinâmicas do Chatwoot resetadas!")
-    print("Agora você pode recriar a infraestrutura (ex: docker compose down -v) e rodar o orquestrador do zero, sem conflitos.")
+    print("Próximo passo: suba a pilha com `make up` e reconfigure a integração com `python scripts/setup.py`.")
 
 if __name__ == "__main__":
     main()

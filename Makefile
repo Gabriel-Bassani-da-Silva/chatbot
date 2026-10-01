@@ -1,29 +1,22 @@
-# --- Variaveis de projeto ---
-DC          := docker compose --env-file versions.env --env-file .env
-CONTAINER   := n8n-stack-postgres-1
-PG_USER     := n8n
+# Comandos do template. O .env real é local e não deve ser versionado.
+DC ?= docker compose --env-file versions.env --env-file .env
+PYTHON ?= python3
 
-.PHONY: help up down restart logs ps config rebuild rebuild-caddy
+.PHONY: help up down restart logs ps rebuild test wipe
 
-# ------------------------------------------------------------------------------
 help:
-	@echo ""
-	@echo -e "\033[36m  n8n-stack\033[0m"
-	@echo -e "\033[90m  Uso: make <comando>\033[0m"
-	@echo ""
-	@echo "  Comandos:"
-	@echo "    up               Sobe os containers"
-	@echo "    down             Para os containers"
-	@echo "    restart          Reinicia os containers"
-	@echo "    logs             Logs ao vivo (Ctrl+C para sair)"
-	@echo "    ps               Lista containers e status"
-	@echo "    config           Valida o compose.yml"
-	@echo "    rebuild          Reconstrói TODAS as imagens e reinicia"
-	@echo "    rebuild-caddy    Reconstrói só o Caddy (útil ao mudar o Caddyfile)"
-	@echo "    wipe             Destrói os volumes de banco (down -v) e reseta o .env"
-	@echo ""
+	@printf '\n\033[36m  n8n-stack\033[0m\n'
+	@printf '\033[90m  Uso: make <comando>\033[0m\n\n'
+	@printf '  Comandos:\n'
+	@printf '    up               Sobe os containers\n'
+	@printf '    down             Para os containers, preservando volumes\n'
+	@printf '    restart          Reinicia os containers\n'
+	@printf '    logs             Mostra logs ao vivo (Ctrl+C para sair)\n'
+	@printf '    ps               Lista containers e status\n'
+	@printf '    rebuild          Reconstrói imagens locais (hoje só Caddy) e sobe a pilha\n'
+	@printf '    test             Executa testes Python e valida sintaxe dos scripts\n'
+	@printf '    wipe             Apaga todos os volumes; exige CONFIRM_WIPE=YES\n\n'
 
-# ------------------------------------------------------------------------------
 up:
 	$(DC) up -d
 
@@ -39,18 +32,27 @@ logs:
 ps:
 	$(DC) ps
 
-config:
-	$(DC) config
-
+# Reconstrói imagens de serviços que têm `build:` local no Compose.
 rebuild:
 	$(DC) up -d --build
 
-rebuild-caddy:
-	$(DC) up -d --build caddy
+test:
+	$(PYTHON) -m unittest discover -s tests -v
+	$(PYTHON) -m py_compile scripts/*.py tests/*.py
+	bash -n scripts/lib.sh scripts/chatwoot/*.sh scripts/waha/*.sh
 
+# `down -v` remove todos os volumes deste projeto, não apenas os bancos.
+# Exige opt-in explícito para reduzir o risco de apagar dados por engano.
 wipe:
-	@echo "Derrubando os containers e apagando os volumes de banco de dados..."
+	@if [ "$(CONFIRM_WIPE)" != "YES" ]; then \
+		printf 'Recusado: este alvo apaga TODOS os volumes do projeto.\n' >&2; \
+		printf 'Revise o escopo e execute `make wipe CONFIRM_WIPE=YES` se realmente quiser continuar.\n' >&2; \
+		exit 2; \
+	fi
+	@if [ ! -f .env ] || [ ! -r .env ] || [ ! -w .env ]; then \
+		printf 'Erro: .env precisa existir e estar legível/escrevível antes de remover volumes.\n' >&2; \
+		exit 1; \
+	fi
+	@printf 'Removendo volumes PostgreSQL, n8n, Redis, WAHA, Caddy e Chatwoot...\n'
 	$(DC) down -v
-	@echo "Resetando o estado das variaveis no .env..."
-	python scripts/reset_state.py
-
+	$(PYTHON) scripts/reset_state.py
