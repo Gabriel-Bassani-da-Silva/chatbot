@@ -1,6 +1,7 @@
 # O Caddy escuta na :80 e roteia pelo hostname.
-# O Cloudflare Tunnel deve ter duas Public Hostnames apontando para http://caddy:80:
-#   - {$DOMAIN}        → http://caddy:80
+# No template, o Cloudflare Tunnel deve ter três Public Hostnames para http://caddy:80:
+#   - {$DOMAIN}          → http://caddy:80
+#   - n8n.{$DOMAIN}      → http://caddy:80
 #   - chatwoot.{$DOMAIN} → http://caddy:80
 
 # Domínio principal — somente a página inicial
