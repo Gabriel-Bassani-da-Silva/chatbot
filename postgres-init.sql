@@ -5,7 +5,8 @@
 CREATE DATABASE fatec;
 
 -- chatwoot-init.sql
-CREATE USER chatwoot WITH PASSWORD '***REMOVED***';
+\getenv chatwoot_password CHATWOOT_POSTGRES_PASSWORD
+CREATE USER chatwoot WITH PASSWORD :'chatwoot_password';
 CREATE DATABASE chatwoot_production OWNER chatwoot;
 GRANT ALL PRIVILEGES ON DATABASE chatwoot_production TO chatwoot;
 

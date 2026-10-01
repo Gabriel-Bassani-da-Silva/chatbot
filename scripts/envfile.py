@@ -14,7 +14,7 @@ from typing import Dict, Iterable, Tuple
 
 KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 ASSIGN_RE = re.compile(
-    r"^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)(.*?)(\r?\n)?$"
+    r"^([ \t]*(?:export[ \t]+)?)([A-Za-z_][A-Za-z0-9_]*)([ \t]*=[ \t]*)(.*?)(\r?\n)?$"
 )
 INLINE_COMMENT_RE = re.compile(r"\s+#")
 

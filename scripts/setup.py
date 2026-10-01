@@ -116,7 +116,7 @@ def run_script(script_path: Path, values: Dict[str, str], timeout: int = 90) -> 
     env.update(values)
     try:
         result = subprocess.run(
-            ["bash", str(script_path)],
+            ["bash", script_path.relative_to(ROOT).as_posix()],
             cwd=str(ROOT),
             env=env,
             capture_output=True,

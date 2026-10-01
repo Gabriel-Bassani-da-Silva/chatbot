@@ -66,6 +66,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      CHATWOOT_POSTGRES_PASSWORD: ${CHATWOOT_POSTGRES_PASSWORD:?CHATWOOT_POSTGRES_PASSWORD is required}
     volumes:
       - pgdata:/var/lib/postgresql/data
       # Executado apenas na inicialização de um volume PostgreSQL vazio.
