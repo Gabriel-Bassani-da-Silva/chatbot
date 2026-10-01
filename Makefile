@@ -20,6 +20,7 @@ help:
 	@echo "    config           Valida o compose.yml"
 	@echo "    rebuild          Reconstrói TODAS as imagens e reinicia"
 	@echo "    rebuild-caddy    Reconstrói só o Caddy (útil ao mudar o Caddyfile)"
+	@echo "    wipe             Destrói os volumes de banco (down -v) e reseta o .env"
 	@echo ""
 
 # ------------------------------------------------------------------------------
@@ -46,3 +47,10 @@ rebuild:
 
 rebuild-caddy:
 	$(DC) up -d --build caddy
+
+wipe:
+	@echo "Derrubando os containers e apagando os volumes de banco de dados..."
+	$(DC) down -v
+	@echo "Resetando o estado das variaveis no .env..."
+	python scripts/reset_state.py
+
