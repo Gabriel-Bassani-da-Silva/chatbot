@@ -97,7 +97,7 @@ fi
 
 if ! RESPONSE_LINK="$(curl --silent --show-error --connect-timeout 5 --max-time 30 \
   --write-out $'\n%{http_code}' -X POST \
-  "${CHATWOOT_BASE}/api/v1/accounts/${ACCOUNT_ID}/inboxes/${CHATWOOT_INBOX_ID}/agent_bot" \
+  "${CHATWOOT_BASE}/api/v1/accounts/${ACCOUNT_ID}/inboxes/${CHATWOOT_INBOX_ID}/set_agent_bot" \
   -H "api_access_token: ${CHATWOOT_ACCOUNT_TOKEN}" \
   -H "Content-Type: application/json" \
   --data-binary "{\"agent_bot\":${BOT_ID}}")"; then
