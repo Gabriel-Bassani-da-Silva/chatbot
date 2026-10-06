@@ -23,10 +23,10 @@ if [[ ! "$ACCOUNT_ID" =~ ^[0-9]+$ || ! "$CHATWOOT_PORT_VALUE" =~ ^[0-9]+$ ]] || 
   exit 1
 fi
 
-WEBHOOK_BASE="${WEBHOOK_URL:-https://n8n.${DOMAIN}}"
+WEBHOOK_BASE="${N8N_WEBHOOK_URL:-${WEBHOOK_URL:-https://n8n.${DOMAIN}}}"
 WEBHOOK_BASE="${WEBHOOK_BASE%/}"
 if [[ ! "$WEBHOOK_BASE" =~ ^https?://[^[:space:]]+$ || "$WEBHOOK_BASE" == *"SEU_DOMINIO"* ]]; then
-  echo "[ERRO]: WEBHOOK_URL não parece configurada e DOMAIN não gerou uma URL válida." >&2
+  echo "[ERRO]: N8N_WEBHOOK_URL (ou WEBHOOK_URL legado) não parece configurada e DOMAIN não gerou uma URL válida." >&2
   exit 1
 fi
 N8N_WEBHOOK="${WEBHOOK_BASE}/webhook/chatwoot"

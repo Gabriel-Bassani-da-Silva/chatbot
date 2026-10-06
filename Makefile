@@ -27,7 +27,7 @@ endif
 DC ?= docker compose --env-file versions.env --env-file .env $(COMPOSE_FILES)
 PYTHON ?= python3
 
-.PHONY: help public up down restart logs ps rebuild test wipe
+.PHONY: help public up down restart logs ps rebuild test validate-compose wipe
 
 # Seletor para invocar os comandos com o Compose público.
 # Use `make public <comando>`; sem `public`, os comandos usam o modo local.
@@ -47,6 +47,7 @@ help:
 	@printf '    rebuild           Reconstrói imagens locais e inicia os serviços\n'
 	@printf '\n  Verificação e limpeza:\n'
 	@printf '    test              Executa os testes e valida a sintaxe dos scripts\n'
+	@printf '    validate-compose  Valida os Compose local/público; requer Docker Compose\n'
 	@printf '    wipe              Remove todos os volumes; exige CONFIRM_WIPE=YES\n'
 	@printf '\n  Exemplos locais:\n'
 	@printf '    make up\n'
@@ -90,6 +91,11 @@ test:
 	$(PYTHON) -m unittest discover -s tests -v
 	$(PYTHON) -m py_compile scripts/*.py tests/*.py
 	bash -n scripts/lib.sh scripts/chatwoot/*.sh scripts/waha/*.sh
+
+# Confere interpolação e estrutura dos Compose local/público com valores sintéticos.
+# Não inicia containers e não usa o .env real; requer Docker Compose v2 instalado.
+validate-compose:
+	$(PYTHON) scripts/validate_compose.py
 
 # Remove os volumes do Compose selecionado e limpa marcadores gerados pelo setup.
 #

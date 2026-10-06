@@ -12,6 +12,8 @@ Este conjunto de scripts prepara a Inbox API do Chatwoot, cria/vincula o Agent B
 
 - O Chatwoot e o WAHA precisam estar ativos e acessíveis pelas portas locais definidas em `CHATWOOT_PORT` e `WAHA_PORT`.
 
+- Configure `N8N_WEBHOOK_URL` com a URL que o Chatwoot deve chamar. `WEBHOOK_URL` antigo ainda é aceito como fallback durante a migração.
+
 ## Executar
 
 ```bash
@@ -35,4 +37,4 @@ A ordem é Inbox → Agent Bot e vínculo → sessão WAHA → registro do app W
 
 - Para recriar uma Inbox ou um Bot deliberadamente, revise e remova as variáveis de estado correspondentes do `.env` antes da execução; isso pode criar recursos novos na API.
 
-Os testes unitários locais podem ser executados com `python3 -m unittest discover -s tests`. Eles não fazem chamadas a Chatwoot, WAHA, n8n ou Docker.
+Os testes unitários locais podem ser executados com `python3 -m unittest discover -s tests`. Eles não fazem chamadas a Chatwoot, WAHA, n8n ou Docker. `make validate-compose` exige Docker Compose, valida os Compose local e público usando valores sintéticos e não inicia containers.
