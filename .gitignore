@@ -17,16 +17,17 @@ n8n_data/
 # =============================================================================
 # O que NAO esta aqui (ou seja, e commitado):
 #   versions.env   — versoes das imagens (sem segredos)
-#   compose.yml    — infraestrutura
+#   compose.yml / compose.public.yml — infraestrutura
 #   postgres-init.sql
 #   Caddyfile / Dockerfile
 # =============================================================================
 .agents/
 
-# Environment files can contain live credentials. Keep only the sanitized template.
+# Environment files can contain live credentials. Keep only sanitized templates.
 .env
 .env.*
 !.env.example
+!.env.public.example
 
 # Python build/test artifacts
 __pycache__/

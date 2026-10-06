@@ -8,7 +8,7 @@ Este conjunto de scripts prepara a Inbox API do Chatwoot, cria/vincula o Agent B
 
 - Bash, Python 3.9+ e `curl` disponíveis.
 
-- Copiar `.env.example` para `.env` e preencher `DOMAIN`, `CHATWOOT_FRONTEND_URL`, `CHATWOOT_ACCOUNT_TOKEN` e `WAHA_API_KEY`.
+- Copiar `.env.example` para `.env` no modo local ou `.env.public.example` para `.env` no modo público. Preencher `CHATWOOT_ACCOUNT_TOKEN` e `WAHA_API_KEY`, além dos demais campos obrigatórios do exemplo escolhido.
 
 - O Chatwoot e o WAHA precisam estar ativos e acessíveis pelas portas locais definidas em `CHATWOOT_PORT` e `WAHA_PORT`.
 

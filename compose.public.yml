@@ -1,0 +1,46 @@
+# Overlay público sobre compose.yml.
+# Uso: docker compose -f compose.yml -f compose.public.yml up -d
+services:
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      n8n:
+        condition: service_started
+      waha:
+        condition: service_started
+    # Caddy recebe o tráfego do Cloudflare Tunnel na porta local 80.
+    ports:
+      - "127.0.0.1:80:80"
+    environment:
+      - DOMAIN=${DOMAIN:?DOMAIN is required}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./public:/srv/public:ro
+    networks:
+      - edge
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  cloudflared:
+    image: cloudflare/cloudflared:${CLOUDFLARED_VERSION:?CLOUDFLARED_VERSION is required}
+    restart: unless-stopped
+    depends_on:
+      caddy:
+        condition: service_started
+    command: [ "tunnel", "run" ]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN is required}
+    networks:
+      - edge
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

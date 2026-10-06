@@ -1,22 +1,29 @@
 # Plataforma de Assistente Virtual RAG
 
-Este projeto utiliza o Docker e o `make` (opcional) para facilitar a inicialização e o gerenciamento de um ecossistema completo para assistentes virtuais integrados ao WhatsApp.
+Este projeto utiliza Docker e o `make` (opcional) para executar um ecossistema de assistente virtual integrado ao WhatsApp, Chatwoot, WAHA, n8n, Redis e PostgreSQL.
 
-## Arquitetura e Roteamento
+## Modos de execução
 
-A infraestrutura foi desenhada para operar de forma segura usando subdomínios, gerenciados localmente pelo **Caddy** (Proxy Reverso) e expostos para a internet via **Cloudflare Tunnel**, sem abrir portas no firewall da sua máquina.
+A base comum está em `compose.yml` e funciona localmente, sem domínio público, Caddy ou Cloudflare Tunnel.
 
-Tudo é regido pela variável global `DOMAIN` configurada no seu arquivo `.env` (ex: `seu-dominio.com`).
+A execução pública usa `compose.yml` com o overlay `compose.public.yml`. Nesse modo, Caddy e Cloudflare Tunnel publicam os subdomínios configurados.
 
-O roteamento padrão funciona da seguinte forma:
-- **`seu-dominio.com`**: Página inicial estática (Portal de acesso rápido).
+### Rotas públicas
+
+- **`seu-dominio.com`**: Página inicial estática.
 - **`n8n.seu-dominio.com`**: Editor do n8n e recepção de webhooks.
 - **`chatwoot.seu-dominio.com`**: Painel de atendimento humano do Chatwoot.
-- **`localhost:3000`**: WAHA (WhatsApp HTTP API) - Isolado da internet por segurança.
+- **`localhost:3000`**: WAHA, mantido somente no host local.
+
+### Acessos locais
+
+- **n8n:** `http://localhost:5678`
+- **Chatwoot:** `http://localhost:3001`
+- **WAHA:** `http://localhost:3000`
 
 ## Documentação Complementar
 
-- [Guia Ilustrado — Rotas do Cloudflare Tunnel](docs/cloudflare/Guia%20ilustrado%20%E2%80%94%20rotas%20do%20Cloudflare%20Tunnel.md)
+- [Guia Ilustrado — Rotas do Cloudflare Tunnel](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/cloudflare/Guia%20ilustrado%20%E2%80%94%20rotas%20do%20Cloudflare%20Tunnel.md)
 
 ---
 
@@ -25,57 +32,86 @@ O roteamento padrão funciona da seguinte forma:
 Antes de iniciar, certifique-se de ter os seguintes programas instalados:
 
 1. **Docker e Docker Compose:** Necessários para rodar a infraestrutura.
-2. **Ollama:** Necessário para rodar os modelos (Llama / Nomic) localmente.
+2. **Ollama:** Necessário para rodar os modelos (Llama / Nomic) localmente. [Download oficial](https://ollama.com/download).
 3. **Um smartphone com WhatsApp:** Para escanear o QR Code da API do WAHA.
 4. **Make (Opcional):** Utilizado para executar atalhos do projeto.
 
-### Links Oficiais
-- **Docker Desktop:** [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
-- **Ollama:** [https://ollama.com/download](https://ollama.com/download)
-- **Make (Windows):** Instale via PowerShell com `choco install make` (requer Chocolatey).
+### Links oficiais
+
+- **Docker Desktop:** https://www.docker.com/products/docker-desktop/
+- **WAHA — WhatsApp HTTP API:** https://waha.devlike.pro/docs/
+- **GNU Make:** https://www.gnu.org/software/make/
 
 ---
 
 ## Como usar o projeto
 
-Depois de instalar os requisitos, copie o arquivo `.env.example` para `.env` e configure o seu domínio e senhas.
+Escolha um dos modos abaixo. O `.env` real não deve ser versionado.
 
-No terminal (na mesma pasta onde está o arquivo `Makefile`), você pode usar os seguintes comandos:
+### Modo local
 
-- **Iniciar todos os serviços:** `make up` *(ou `docker compose --env-file .env --env-file versions.env up -d`)*
-- **Mostrar os logs:** `make logs`
-- **Desligar os containers:** `make down`
+1. Copie o exemplo local:
 
----
+   ```bash
+   cp .env.example .env
+   ```
 
-## Primeiro deploy — Configuração Inicial
+2. Preencha os valores obrigatórios no `.env`.
+3. Inicie os serviços locais:
 
-Após subir os containers pela **primeira vez**, siga a ordem abaixo para colocar o sistema no ar.
+   ```bash
+   make up
+   ```
 
-### Passo 1: Configurar as Rotas no Cloudflare
-Antes de conseguir acessar o Chatwoot e o n8n pela web, você deve configurar o Tunnel.
-Siga o **[Guia Ilustrado — Rotas do Cloudflare Tunnel](docs/cloudflare/Guia%20ilustrado%20%E2%80%94%20rotas%20do%20Cloudflare%20Tunnel.md)** para apontar o tráfego da nuvem para o container do Caddy.
+4. Abra o Chatwoot em `http://localhost:3001`, conclua o cadastro e obtenha o `CHATWOOT_ACCOUNT_TOKEN`.
+5. Execute o setup:
 
-### Passo 2: Pegar a Conta Admin e o Token no Chatwoot
-1. Acesse a URL pública do seu Chatwoot (ex: `https://chatwoot.seu-dominio.com`) e complete o cadastro inicial.
-2. Após o login, clique no seu **Perfil** (canto inferior esquerdo) → **Configurações de Perfil**.
-3. Role até o final da página e copie o seu **Access Token**.
-4. Cole esse código no seu arquivo `.env`, na variável `CHATWOOT_ACCOUNT_TOKEN`.
+   ```bash
+   python3 scripts/setup.py
+   ```
 
-### Passo 3: Executar a Automação Segura (Orquestrador)
-Com as credenciais no lugar, rode o orquestrador. Ele fará todo o trabalho pesado (criar a Caixa de Entrada, gerar o Agent Bot, vincular contas e configurar a sessão do WAHA) de forma protegida e sem vazar as suas senhas.
+6. Abra `http://localhost:3000/dashboard`, confirme a sessão `default` e escaneie o QR Code do WhatsApp.
 
-No terminal, execute:
+### Modo público
+
+1. Copie o exemplo público:
+
+   ```bash
+   cp .env.public.example .env
+   ```
+
+2. Preencha o domínio, o token do Cloudflare Tunnel e os demais valores obrigatórios no `.env`.
+3. Configure as rotas do Tunnel conforme o **[Guia Ilustrado — Rotas do Cloudflare Tunnel](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/cloudflare/Guia%20ilustrado%20%E2%80%94%20rotas%20do%20Cloudflare%20Tunnel.md)**.
+4. Inicie a stack pública:
+
+   ```bash
+   make public up
+   ```
+
+5. Conclua o cadastro do Chatwoot pela URL pública, obtenha o `CHATWOOT_ACCOUNT_TOKEN` e salve-o no `.env`.
+6. Execute o setup:
+
+   ```bash
+   python3 scripts/setup.py
+   ```
+
+7. Abra `http://localhost:3000/dashboard`, confirme a sessão `default` e escaneie o QR Code do WhatsApp.
+
+### Alternativa sem `setup.py`
+
+Execute os scripts na ordem abaixo, na raiz do projeto:
+
 ```bash
-python scripts/setup.py
+bash scripts/chatwoot/1_create_inbox.sh
+bash scripts/chatwoot/2_create_agent_bot.sh
+bash scripts/waha/2_create_session.sh
+bash scripts/waha/1_setup_chatwoot_app.sh
 ```
-*Opcional: Você pode rodar com a flag `--dry-run` para validar suas variáveis do `.env` antes sem chamar as APIs.*
 
-### Passo 4: Escanear o QR code do WhatsApp
-Finalizada a orquestração, o WAHA estará pronto. 
-Acesse `http://localhost:3000/dashboard` no seu navegador, certifique-se que a sessão `default` está "STARTING" ou "ONLINE", e escaneie o QR code no seu WhatsApp.
+Antes de executar o setup, valide o `.env` sem chamar APIs:
 
----
+```bash
+python3 scripts/setup.py --dry-run
+```
 
-### Após reinícios normais
-Nenhuma reconfiguração é necessária. A sessão, o App Chatwoot e a autenticação ficam salvos nos volumes e são restaurados automaticamente ao reiniciar o Docker.
+Após reinícios normais, a sessão, o App Chatwoot e a autenticação permanecem salvos nos volumes.
