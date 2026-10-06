@@ -62,11 +62,11 @@ def preflight(values: Dict[str, str]) -> None:
     if frontend.scheme not in ("http", "https") or not frontend.netloc or "SEU_DOMINIO" in frontend.netloc:
         abort("CHATWOOT_FRONTEND_URL precisa ser uma URL http(s) pública válida, sem placeholders.")
 
-    webhook = values.get("WEBHOOK_URL", "").strip()
+    webhook = (values.get("N8N_WEBHOOK_URL", "").strip() or values.get("WEBHOOK_URL", "").strip())
     if webhook:
         parsed_webhook = urlparse(webhook)
         if parsed_webhook.scheme not in ("http", "https") or not parsed_webhook.netloc:
-            abort("WEBHOOK_URL, quando preenchida, precisa ser uma URL http(s) válida.")
+            abort("N8N_WEBHOOK_URL (ou WEBHOOK_URL legado), quando preenchida, precisa ser uma URL http(s) válida.")
 
     validate_port(values, "CHATWOOT_PORT", "3001")
     validate_port(values, "WAHA_PORT", "3000")

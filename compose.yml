@@ -20,8 +20,8 @@ volumes:
   chatwoot_storage:
 
 networks:
-  # Rede do app/proxy/túnel; permite saída para serviços externos.
-  edge: # Somente serviços de dados; n8n acessa por sua segunda interface.
+  # Rede compartilhada da aplicação; o overlay público adiciona Caddy e Tunnel.
+  edge:
 
   backend:
     # 'internal: true' removido para que o port mapping funcione
@@ -130,7 +130,8 @@ services:
       DB_POSTGRESDB_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
       DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       # Passa o nome atual ao n8n, aceitando WEBHOOK_URL legado no .env.
-      N8N_WEBHOOK_URL: "${N8N_WEBHOOK_URL:-${WEBHOOK_URL:?N8N_WEBHOOK_URL or WEBHOOK_URL is required}}"
+      # O fallback aninhado não pode usar :? aqui: Compose avalia o ramo interno mesmo se o atual existir.
+      N8N_WEBHOOK_URL: "${N8N_WEBHOOK_URL:-${WEBHOOK_URL:-}}"
       N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL:?N8N_EDITOR_BASE_URL is required}
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY is required}
       N8N_PROXY_HOPS: ${N8N_PROXY_HOPS:-1}
@@ -206,44 +207,10 @@ services:
       - waha_apps
     <<: *default-logging
 
-  caddy:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    depends_on:
-      n8n:
-        condition: service_started
-      waha:
-        condition: service_started
-    # Caddy escutando na porta local 80, e recebendo do Cloudflare Tunnel internamente.
-    ports:
-      - "127.0.0.1:80:80"
-    environment:
-      - DOMAIN=${DOMAIN:?DOMAIN is required}
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
-      - ./public:/srv/public:ro
-    networks:
-      - edge
-    <<: *default-logging
+  # Caddy, cloudflared e seus volumes são adicionados por compose.public.yml.
 
-  cloudflared:
-    image: cloudflare/cloudflared:${CLOUDFLARED_VERSION:?CLOUDFLARED_VERSION is required}
-    restart: unless-stopped
-    depends_on:
-      caddy:
-        condition: service_started
-    command: [ "tunnel", "run" ]
-    environment:
-      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN is required}
-    networks:
-      - edge
-    <<: *default-logging
-
-# sandbox-certs, sandbox-api e sandbox-runner-1 permanecem opcionais.
-# Habilite-os somente com a configuração mTLS documentada.
+  # sandbox-certs, sandbox-api e sandbox-runner-1 permanecem opcionais.
+  # Habilite-os somente com a configuração mTLS documentada.
 
   chatwoot-web:
     <<: *chatwoot-common
