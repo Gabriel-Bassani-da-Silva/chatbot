@@ -24,7 +24,6 @@ networks:
   edge:
 
   backend:
-    # 'internal: true' removido para que o port mapping funcione
 
   waha_apps:
     # Rede interna dedicada à fila do WAHA Apps.
@@ -129,18 +128,12 @@ services:
       DB_POSTGRESDB_DATABASE: ${POSTGRES_DB:?POSTGRES_DB is required}
       DB_POSTGRESDB_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
       DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      # Passa o nome atual ao n8n, aceitando WEBHOOK_URL legado no .env.
-      # O fallback aninhado não pode usar :? aqui: Compose avalia o ramo interno mesmo se o atual existir.
-      N8N_WEBHOOK_URL: "${N8N_WEBHOOK_URL:-${WEBHOOK_URL:-}}"
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
       N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL:?N8N_EDITOR_BASE_URL is required}
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY is required}
       N8N_PROXY_HOPS: ${N8N_PROXY_HOPS:-1}
       N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-true}
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: ${N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS:-true}
-      N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE: ${N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE:-true}
-      N8N_COMMUNITY_PACKAGES_MANAGED_BY_ENV: "true"
-      # Aspas duplas permitem interpolar a versão definida em versions.env.
-      N8N_COMMUNITY_PACKAGES: "[{\"name\":\"@devlikeapro/n8n-nodes-waha\",\"version\":\"${N8N_NODES_WAHA_VERSION:?N8N_NODES_WAHA_VERSION is required}\"}]"
       N8N_DIAGNOSTICS_ENABLED: ${N8N_DIAGNOSTICS_ENABLED:-false}
       GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-America/Sao_Paulo}
       TZ: ${TZ:-America/Sao_Paulo}
@@ -209,8 +202,6 @@ services:
 
   # Caddy, cloudflared e seus volumes são adicionados por compose.public.yml.
 
-  # sandbox-certs, sandbox-api e sandbox-runner-1 permanecem opcionais.
-  # Habilite-os somente com a configuração mTLS documentada.
 
   chatwoot-web:
     <<: *chatwoot-common

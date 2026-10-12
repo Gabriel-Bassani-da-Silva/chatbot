@@ -43,17 +43,9 @@ class PreflightWebhookTests(unittest.TestCase):
     def test_accepts_current_n8n_webhook_variable(self) -> None:
         setup_script.preflight(self.valid_values())
 
-    def test_accepts_legacy_webhook_variable_as_fallback(self) -> None:
-        values = self.valid_values()
-        values.pop("N8N_WEBHOOK_URL")
-        values["WEBHOOK_URL"] = "https://legacy.example.test"
-
-        setup_script.preflight(values)
-
-    def test_rejects_invalid_current_webhook_even_if_legacy_value_is_valid(self) -> None:
+    def test_rejects_invalid_webhook(self) -> None:
         values = self.valid_values()
         values["N8N_WEBHOOK_URL"] = "not-a-url"
-        values["WEBHOOK_URL"] = "https://legacy.example.test"
 
         with patch.object(setup_script, "abort", side_effect=SystemExit(1)):
             with self.assertRaises(SystemExit):

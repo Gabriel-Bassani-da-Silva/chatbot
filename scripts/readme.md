@@ -12,7 +12,7 @@ Este conjunto de scripts prepara a Inbox API do Chatwoot, cria/vincula o Agent B
 
 - O Chatwoot e o WAHA precisam estar ativos e acessíveis pelas portas locais definidas em `CHATWOOT_PORT` e `WAHA_PORT`.
 
-- Configure `N8N_WEBHOOK_URL` com a URL que o Chatwoot deve chamar. `WEBHOOK_URL` antigo ainda é aceito como fallback durante a migração.
+- Configure `N8N_WEBHOOK_URL` com a URL que o Chatwoot deve chamar.
 
 ## Executar
 
