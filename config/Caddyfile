@@ -9,6 +9,7 @@
     # Página inicial estática (index.html, style.css)
     handle {
         root * /srv/public
+        templates
         file_server
     }
 }
