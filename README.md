@@ -97,6 +97,10 @@ Escolha um dos modos abaixo. O `.env` real não deve ser versionado.
 
 7. Abra `http://localhost:3000/dashboard`, confirme a sessão `default` e escaneie o QR Code do WhatsApp.
 
+### Credenciais dos workflows
+
+Consulte o [guia de credenciais dos workflows](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/credenciais-workflows-n8n.md).
+
 ### Alternativa sem `setup.py`
 
 Execute os scripts na ordem abaixo, na raiz do projeto:
