@@ -130,6 +130,7 @@ services:
       DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
       N8N_EDITOR_BASE_URL: ${N8N_EDITOR_BASE_URL:?N8N_EDITOR_BASE_URL is required}
+      N8N_MCP_BASE_URL: ${N8N_MCP_BASE_URL:-}
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY is required}
       N8N_PROXY_HOPS: ${N8N_PROXY_HOPS:-1}
       N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-true}
@@ -210,7 +211,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: bundle exec rails s -p 3000 -b 0.0.0.0
+    command: [ "sh", "-c", "bundle exec rails db:chatwoot_prepare && exec bundle exec rails s -p 3000 -b 0.0.0.0" ]
     ports:
       - "127.0.0.1:${CHATWOOT_PORT:-3001}:3000"
     logging:

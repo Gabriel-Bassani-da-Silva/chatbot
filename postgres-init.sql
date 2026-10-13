@@ -1,10 +1,14 @@
 -- postgres-init.sql
--- Cria o banco da aplicação separado do banco interno do n8n.
+-- Cria o banco da aplicação (Chatbot) separado do banco interno do n8n.
 -- Este script é executado automaticamente pelo Postgres na primeira inicialização
 -- (somente quando o volume pgdata está vazio).
-CREATE DATABASE fatec;
+CREATE DATABASE chatbot;
+
+\c chatbot
+CREATE EXTENSION IF NOT EXISTS vector;
 
 -- chatwoot-init.sql
+\c postgres
 \getenv chatwoot_password CHATWOOT_POSTGRES_PASSWORD
 CREATE USER chatwoot WITH PASSWORD :'chatwoot_password';
 CREATE DATABASE chatwoot_production OWNER chatwoot;
