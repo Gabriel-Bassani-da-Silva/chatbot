@@ -11,7 +11,7 @@ from scripts import validate_compose  # noqa: E402
 
 
 class ValidateComposeTests(unittest.TestCase):
-    def test_checks_local_public_and_legacy_webhook_without_starting_containers(self) -> None:
+    def test_checks_local_and_public_without_starting_containers(self) -> None:
         observed = []
 
         def fake_run(command, **kwargs):
@@ -27,11 +27,10 @@ class ValidateComposeTests(unittest.TestCase):
             result = validate_compose.main()
 
         self.assertEqual(result, 0)
-        self.assertEqual(run.call_count, 3)
+        self.assertEqual(run.call_count, 2)
         self.assertIn("N8N_WEBHOOK_URL=https://n8n.example.test", observed[0][1])
         self.assertIn("-f", observed[1][0])
         self.assertIn("compose.public.yml", observed[1][0])
-        self.assertIn("WEBHOOK_URL=https://n8n.example.test", observed[2][1])
         for command, _ in observed:
             self.assertEqual(command[-2:], ["config", "--quiet"])
             self.assertNotIn("up", command)

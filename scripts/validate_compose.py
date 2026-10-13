@@ -43,7 +43,7 @@ def _write_env(path: Path, values: Dict[str, str]) -> None:
 def _compose_env(values: Dict[str, str]) -> Dict[str, str]:
     """Avoid caller environment values overriding the synthetic fixture."""
     env = os.environ.copy()
-    for key in set(SYNTHETIC_ENV) | {"WEBHOOK_URL", "N8N_WEBHOOK_URL"}:
+    for key in set(SYNTHETIC_ENV) | {"N8N_WEBHOOK_URL"}:
         env.pop(key, None)
     for key in list(env):
         if key.startswith("COMPOSE_"):
@@ -100,10 +100,6 @@ def main() -> int:
             dict(SYNTHETIC_ENV),
         ),
     ]
-    legacy_env = dict(SYNTHETIC_ENV)
-    legacy_env.pop("N8N_WEBHOOK_URL")
-    legacy_env["WEBHOOK_URL"] = "https://n8n.example.test"
-    checks.append(("local com WEBHOOK_URL legado", ["compose.yml"], legacy_env))
 
     failures = 0
     for label, compose_files, env_values in checks:

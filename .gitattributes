@@ -1,0 +1,4 @@
+# Scripts de shell precisam de LF mesmo em checkout no Windows,
+# senão o bash falha com "syntax error" por causa do CR final.
+*.sh text eol=lf
+Makefile text eol=lf

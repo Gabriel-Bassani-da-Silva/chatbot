@@ -1,24 +1,64 @@
 # ============================================================
-# Comandos do projeto
+# Comandos do projeto  —  rode `make` para ver a ajuda
 # ============================================================
-# O arquivo .env real contém credenciais e nunca deve ser versionado.
-# Os comandos usam versions.env para fixar as versões das imagens.
-#
-# Modo local (padrão):
-#   make up
-#
-# Modo público, com Caddy e Cloudflare Tunnel:
-#   make public up
-#   make public logs
-#   make public down
-#
-# `public` é um seletor de modo: escreva-o antes do comando desejado.
-# ============================================================
+
+# `make` sem argumentos mostra a ajuda.
+.DEFAULT_GOAL := help
+
+define HELP_TEXT
+
+  (modo atual: $(MODE))
+  Uso: make [public|local] <comando> [SERVICE=nome]
+
+  Execução e diagnóstico
+    up                  Inicia os serviços em segundo plano
+    down                Para os serviços, preservando volumes
+    restart             Reinicia os serviços (ou SERVICE=nome)
+    logs                Acompanha os logs (Ctrl+C sai; ou SERVICE=nome)
+    ps                  Lista os serviços e seus estados
+    rebuild             Reconstrói imagens locais e inicia os serviços
+
+  Verificação e limpeza
+    test                Executa os testes e valida a sintaxe dos scripts
+    validate-compose    Valida os Compose local/público (requer Docker Compose)
+    wipe                Remove TODOS os volumes; pede confirmação (y/n)
+
+  Modo (local ou público)
+    Detectado automaticamente: se o .env tiver TUNNEL_TOKEN preenchido,
+    usa o modo público (Caddy + Cloudflare Tunnel); senão, local.
+    Seletores (escreva antes do comando) ou MODE=... forçam o modo.
+
+  Exemplos
+    make up                      # modo automático
+    make public up               # força público
+    make local up                # força local (ou MODE=local)
+    make logs SERVICE=n8n        # logs só do n8n
+    make wipe                    # pergunta y/n antes de apagar
+    make wipe y                  # sem perguntar (ou CONFIRM_WIPE=YES)
+
+endef
+export HELP_TEXT
+
+help:
+	@printf '%s\n' "$$HELP_TEXT"
+
+# Detecção automática: TUNNEL_TOKEN não vazio no .env => público.
+# Aspas e espaços não contam: TUNNEL_TOKEN="" ou TUNNEL_TOKEN=   é vazio, como no Compose.
+DETECTED_MODE := $(if $(shell sed -n "s/^TUNNEL_TOKEN=[[:space:]]*[\"']*[[:space:]]*\([^\"'[:space:]]\)/\1/p" .env 2>/dev/null),public,local)
+
+# Prioridade: seletor na linha de comando > MODE=... > detecção automática.
+ifneq ($(filter public,$(MAKECMDGOALS)),)
+MODE := public
+else ifneq ($(filter local,$(MAKECMDGOALS)),)
+MODE := local
+else ifeq ($(origin MODE),undefined)
+MODE := $(DETECTED_MODE)
+endif
 
 # Compose base: PostgreSQL, Redis, n8n, WAHA e Chatwoot.
 # O overlay público acrescenta Caddy e Cloudflare Tunnel.
 COMPOSE_FILES := -f compose.yml
-ifneq ($(filter public,$(MAKECMDGOALS)),)
+ifeq ($(MODE),public)
 COMPOSE_FILES += -f compose.public.yml
 endif
 
@@ -27,88 +67,67 @@ endif
 DC ?= docker compose --env-file versions.env --env-file .env $(COMPOSE_FILES)
 PYTHON ?= python3
 
-.PHONY: help public up down restart logs ps rebuild test validate-compose wipe
+# Serviço opcional para logs/restart: make logs SERVICE=n8n
+SERVICE ?=
 
-# Seletor para invocar os comandos com o Compose público.
-# Use `make public <comando>`; sem `public`, os comandos usam o modo local.
-public:
+.PHONY: help public local y yes up down restart logs ps rebuild test validate-compose wipe check-env
+
+# Seletores para forçar o modo (sem eles, o modo é detectado pelo .env).
+public local:
 	@:
 
-# Mostra os comandos disponíveis e exemplos de uso.
-help:
-	@printf '\n\033[36m  n8n-stack\033[0m\n'
-	@printf '\033[90m  Uso: make [public] <comando>\033[0m\n\n'
-	@printf '  Execução e diagnóstico:\n'
-	@printf '    up                Inicia os serviços em segundo plano\n'
-	@printf '    down              Para os serviços, preservando volumes\n'
-	@printf '    restart           Reinicia os serviços\n'
-	@printf '    logs              Acompanha os logs; Ctrl+C encerra só a visualização\n'
-	@printf '    ps                Lista os serviços e seus estados\n'
-	@printf '    rebuild           Reconstrói imagens locais e inicia os serviços\n'
-	@printf '\n  Verificação e limpeza:\n'
-	@printf '    test              Executa os testes e valida a sintaxe dos scripts\n'
-	@printf '    validate-compose  Valida os Compose local/público; requer Docker Compose\n'
-	@printf '    wipe              Remove todos os volumes; exige CONFIRM_WIPE=YES\n'
-	@printf '\n  Exemplos locais:\n'
-	@printf '    make up\n'
-	@printf '    make logs\n'
-	@printf '\n  Exemplos públicos:\n'
-	@printf '    make public up\n'
-	@printf '    make public logs\n'
-	@printf '    make public wipe CONFIRM_WIPE=YES\n\n'
+# Seletores de confirmação automática: make wipe y
+y yes:
+	@:
 
-# Inicia os serviços sem bloquear o terminal.
-# Sem o seletor public, usa somente compose.yml.
-# Com `make public up`, usa compose.yml + compose.public.yml.
-up:
+# Garante que o .env existe antes de usar o Docker Compose.
+check-env:
+	@if [ ! -f .env ]; then \
+		printf '\033[31mErro:\033[0m arquivo .env não encontrado.\n' >&2; \
+		printf 'Copie o modelo: cp $(if $(filter public,$(MODE)),.env.public.example,.env.example) .env\n' >&2; \
+		exit 1; \
+	fi
+
+##@ Execução e diagnóstico
+up: check-env ## Inicia os serviços em segundo plano
 	$(DC) up -d
 
-# Para os containers, mas preserva os volumes e os dados persistentes.
-down:
+down: check-env ## Para os serviços, preservando volumes
 	$(DC) down
 
-# Reinicia os containers sem reconstruir as imagens.
-restart:
-	$(DC) restart
+restart: check-env ## Reinicia os serviços (ou SERVICE=nome)
+	$(DC) restart $(SERVICE)
 
-# Acompanha os logs dos serviços.
-# Ctrl+C encerra a visualização; os containers continuam em execução.
-logs:
-	$(DC) logs -f
+logs: check-env ## Acompanha os logs (Ctrl+C sai; ou SERVICE=nome)
+	$(DC) logs -f $(SERVICE)
 
-# Mostra os containers gerenciados pelo Compose e seus estados.
-ps:
+ps: check-env ## Lista os serviços e seus estados
 	$(DC) ps
 
-# Reconstrói as imagens que possuem build local e inicia os serviços.
-# No modo público, isso também reconstrói a imagem local do Caddy.
-rebuild:
+rebuild: check-env ## Reconstrói imagens locais e inicia os serviços
 	$(DC) up -d --build
 
-# Executa a suíte Python, compila os scripts e valida a sintaxe Bash.
-# Não inicia containers nem chama APIs externas.
-test:
+##@ Verificação e limpeza
+test: ## Executa os testes e valida a sintaxe dos scripts (requer Node.js)
+	@command -v node >/dev/null 2>&1 || { printf 'Erro: Node.js não encontrado no PATH; os testes do normalizador dependem dele.\n' >&2; exit 1; }
 	$(PYTHON) -m unittest discover -s tests -v
 	$(PYTHON) -m py_compile scripts/*.py tests/*.py
 	bash -n scripts/lib.sh scripts/chatwoot/*.sh scripts/waha/*.sh
 
-# Confere interpolação e estrutura dos Compose local/público com valores sintéticos.
-# Não inicia containers e não usa o .env real; requer Docker Compose v2 instalado.
-validate-compose:
+validate-compose: ## Valida os Compose local/público (requer Docker Compose)
 	$(PYTHON) scripts/validate_compose.py
 
-# Remove os volumes do Compose selecionado e limpa marcadores gerados pelo setup.
-#
 # ATENÇÃO: apaga dados persistentes do PostgreSQL, n8n, Redis, WAHA e Chatwoot.
 # No modo público, também remove os volumes do Caddy. É irreversível.
-# Confirme explicitamente o escopo com um dos comandos abaixo:
-#   make wipe CONFIRM_WIPE=YES
-#   make public wipe CONFIRM_WIPE=YES
-wipe:
-	@if [ "$(CONFIRM_WIPE)" != "YES" ]; then \
-		printf 'Recusado: este alvo apaga TODOS os volumes do projeto.\n' >&2; \
-		printf 'Revise o escopo e execute `$(if $(filter public,$(MAKECMDGOALS)),make public wipe,make wipe) CONFIRM_WIPE=YES` se realmente quiser continuar.\n' >&2; \
-		exit 2; \
+wipe: ## Remove TODOS os volumes; pede confirmação (y/n)
+	@if [ "$(CONFIRM_WIPE)" != "YES" ] && [ -z "$(filter y yes,$(MAKECMDGOALS))" ]; then \
+		printf '\033[31mATENÇÃO:\033[0m isto apaga TODOS os volumes do projeto (modo: $(MODE)). É irreversível.\n'; \
+		printf 'Continuar? [y/n] '; \
+		read answer; \
+		case "$$answer" in \
+			y|Y|yes|YES) ;; \
+			*) printf 'Cancelado.\n'; exit 1 ;; \
+		esac; \
 	fi
 	@if [ ! -f .env ] || [ ! -r .env ] || [ ! -w .env ]; then \
 		printf 'Erro: .env precisa existir e estar legível/escrevível antes de remover volumes.\n' >&2; \
