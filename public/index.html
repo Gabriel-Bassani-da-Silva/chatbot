@@ -10,11 +10,11 @@
   <!-- Fonte Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Ícone de servidor no topo do card -->
+  <!-- Ícones FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body>
+<body data-domain='{{env "DOMAIN"}}'>
   <div class="card">
     <div class="header">
       <i class="fa-solid fa-server icone-topo"></i>
@@ -22,26 +22,59 @@
       <p>Selecione a plataforma para acessar o painel de controle.</p>
     </div>
 
+    <!-- Seletor de Modo: Local vs Público -->
+    <div class="tabs-container">
+      <button type="button" class="tab-btn active" id="tab-local" onclick="setMode('local')">
+        <i class="fa-solid fa-laptop"></i>
+        <span>Local</span>
+      </button>
+      <button type="button" class="tab-btn" id="tab-public" onclick="setMode('public')">
+        <i class="fa-solid fa-globe"></i>
+        <span>Público</span>
+      </button>
+    </div>
+
+    <!-- Indicador do Ambiente Ativo -->
+    <div class="badge-wrapper">
+      <div class="env-badge" id="env-badge">
+        <span class="status-dot"></span>
+        <span id="env-label">Portas Locais (Docker)</span>
+      </div>
+    </div>
+
+    <!-- Links dos Serviços -->
     <div class="links">
       <!-- Botão n8n -->
-      <a class="btn n8n" href='https://n8n.{{env "DOMAIN"}}' target="_blank" rel="noopener">
-        <!-- Link CDN nativo entregando o SVG oficial rígido em branco -->
+      <a id="btn-n8n" class="btn n8n" href="http://localhost:5678" target="_blank" rel="noopener">
         <img src="https://cdn.simpleicons.org/n8n/ffffff" width="24" height="24" alt="Logo n8n" class="icone">
         Acessar n8n
       </a>
 
       <!-- Botão Chatwoot -->
-      <a class="btn chatwoot" href='https://chatwoot.{{env "DOMAIN"}}' target="_blank" rel="noopener">
-        <!-- Link CDN nativo entregando o SVG oficial rígido em branco -->
+      <a id="btn-chatwoot" class="btn chatwoot" href="http://localhost:3001" target="_blank" rel="noopener">
         <img src="https://cdn.simpleicons.org/chatwoot/ffffff" width="24" height="24" alt="Logo Chatwoot" class="icone">
         Acessar Chatwoot
       </a>
+
+      <!-- Botão WAHA (apenas no modo local) -->
+      <a id="btn-waha" class="btn waha" href="http://localhost:3000/dashboard" target="_blank" rel="noopener">
+        <img src="https://cdn.simpleicons.org/whatsapp/ffffff" width="24" height="24" alt="Logo WhatsApp" class="icone">
+        Acessar WAHA (WhatsApp)
+      </a>
+
+      <!-- Aviso no modo público informando que WAHA é local -->
+      <div id="waha-notice" class="public-notice" style="display: none;">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>WAHA restrito ao acesso local (127.0.0.1:3000)</span>
+      </div>
     </div>
 
     <div class="footer">
       &copy; 2026 Gabriel Bassani da Silva. Todos os direitos reservados.
     </div>
   </div>
+
+  <script src="portal.js"></script>
 </body>
 
 </html>
