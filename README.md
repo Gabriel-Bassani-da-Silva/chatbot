@@ -32,7 +32,7 @@ O arquivo `.env` contém credenciais e nunca deve ser versionado. Siga as etapas
 | :--- | :--- | :--- |
 | **1.&nbsp;Criar&nbsp;.env** | `cp .env.example .env` | `cp .env.public.example .env` |
 | **2.&nbsp;Configurar** | Preencha senhas e banco | Preencha `DOMAIN`, `TUNNEL_TOKEN` e senhas |
-| **3.&nbsp;Iniciar&nbsp;stack** | `make up` | `make up` *(detecta público pelo token)* |
+| **3.&nbsp;Iniciar&nbsp;stack** | `make up`<br>*(ou `docker compose --env-file versions.env --env-file .env -f compose.yml up -d`)* | `make up` *(detecta público pelo token)*<br>*(ou `docker compose --env-file versions.env --env-file .env -f compose.yml -f compose.public.yml up -d`)* |
 | **4.&nbsp;Chatwoot** | Acesse `http://localhost:3001`, conclua o cadastro e copie o `CHATWOOT_ACCOUNT_TOKEN` (*Profile Settings*) | Acesse `https://chatwoot.seu-dominio.com`, conclua o cadastro e copie o `CHATWOOT_ACCOUNT_TOKEN` (*Profile Settings*) |
 | **5.&nbsp;Integração** | Salve o token no `.env` e execute:<br>`python3 scripts/setup.py` | Salve o token no `.env` e execute:<br>`python3 scripts/setup.py` |
 | **6.&nbsp;WhatsApp** | Abra `http://localhost:3000/dashboard` e escaneie o QR Code na sessão `default` | Abra `http://localhost:3000/dashboard` e escaneie o QR Code na sessão `default` |
