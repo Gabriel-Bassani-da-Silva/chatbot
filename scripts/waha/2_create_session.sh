@@ -18,7 +18,7 @@ if ! RESPONSE="$(curl --silent --show-error --connect-timeout 5 --max-time 30 \
   --write-out $'\n%{http_code}' -X POST "$URL" \
   -H "X-Api-Key: ${WAHA_API_KEY}" \
   -H "Content-Type: application/json" \
-  --data-binary '{"name":"default"}')"; then
+  --data-binary '{"name":"default","config":{"noweb":{"store":{"enabled":true,"fullSync":true}}}}')"; then
   echo "[ERRO]: Não foi possível conectar à API do WAHA para criar a sessão." >&2
   exit 1
 fi
