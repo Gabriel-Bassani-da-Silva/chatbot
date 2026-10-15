@@ -28,7 +28,7 @@ if ! RESPONSE="$(curl --silent --show-error --connect-timeout 5 --max-time 30 \
   --write-out $'\n%{http_code}' -X POST "$URL" \
   -H "api_access_token: ${CHATWOOT_ACCOUNT_TOKEN}" \
   -H "Content-Type: application/json" \
-  --data-binary '{"name":"WhatsApp WAHA","channel":{"type":"api"}}')"; then
+  --data-binary '{"name":"WhatsApp WAHA","channel":{"type":"api","webhook_url":"http://waha:3000/webhooks/chatwoot/default/chatwoot"}}')"; then
   echo "[ERRO]: Não foi possível conectar à API do Chatwoot para criar a Inbox." >&2
   exit 1
 fi
