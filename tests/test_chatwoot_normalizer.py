@@ -78,6 +78,45 @@ process.stdout.write(JSON.stringify(result));
 
         self.assertFalse(result["json"]["process"])
 
+    def test_incoming_audio_attachment_is_normalized(self) -> None:
+        result = self.run_node(
+            {
+                "event": "message_created",
+                "id": 9006,
+                "message_type": "incoming",
+                "content": "",
+                "private": False,
+                "conversation": {"id": 322},
+                "sender": {"id": 78},
+                "attachments": [
+                    {
+                        "file_type": "audio",
+                        "data_url": "https://chatwoot.example/audio.oga",
+                    }
+                ],
+            }
+        )
+
+        self.assertTrue(result["json"]["process"])
+        self.assertEqual(result["json"]["input_type"], "audio")
+        self.assertEqual(result["json"]["audio_url"], "https://chatwoot.example/audio.oga")
+        self.assertEqual(result["json"]["conversation_id"], "322")
+        self.assertEqual(result["json"]["message_id"], "9006")
+
+    def test_message_without_content_or_audio_is_ignored(self) -> None:
+        result = self.run_node(
+            {
+                "event": "message_created",
+                "id": 9007,
+                "message_type": "incoming",
+                "content": "   ",
+                "private": False,
+                "conversation": {"id": 322},
+            }
+        )
+
+        self.assertFalse(result["json"]["process"])
+
 
 if __name__ == "__main__":
     unittest.main()

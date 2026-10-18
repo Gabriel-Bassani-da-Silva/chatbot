@@ -10,6 +10,7 @@
  * - aceita somente eventos message_created;
  * - aceita somente mensagens incoming;
  * - ignora mensagens privadas;
+ * - aceita mensagens com texto OU anexo de áudio;
  * - devolve process=false para o IF seguinte encerrar o fluxo sem erro;
  * - preserva conversation_id e message_id para sessão, histórico e deduplicação.
  */
@@ -26,11 +27,24 @@ const sender = message.sender ?? body.sender ?? {};
 const senderId = String(sender.id ?? '');
 const isPrivate = Boolean(message.private ?? body.private ?? false);
 
+const attachments = Array.isArray(message.attachments)
+    ? message.attachments
+    : (Array.isArray(body.attachments) ? body.attachments : []);
+
+const firstAttachment = attachments[0] || {};
+const fileType = String(firstAttachment.file_type || '').toLowerCase();
+const contentType = String(firstAttachment.content_type || '').toLowerCase();
+const isAudio = fileType === 'audio' || contentType.startsWith('audio/');
+const audioUrl = isAudio ? String(firstAttachment.data_url || '') : '';
+
+const hasContent = Boolean(content.trim());
+const hasValidAudio = isAudio && Boolean(audioUrl);
+
 const valid =
     event === 'message_created' &&
     messageType === 'incoming' &&
     !isPrivate &&
-    content.trim() &&
+    (hasContent || hasValidAudio) &&
     conversationId &&
     messageId;
 
@@ -44,15 +58,19 @@ if (!valid) {
     };
 }
 
+const inputType = hasValidAudio ? 'audio' : 'text';
+
 return {
     json: {
         process: true,
         source: 'chatwoot',
         channel: 'chatwoot',
-        chatInput: content,
-        text: content,
-        caption: content,
-        input_type: 'text',
+        chatInput: hasContent ? content : '',
+        text: hasContent ? content : '',
+        caption: hasContent ? content : '',
+        input_type: inputType,
+        audio_url: audioUrl,
+        file_type: fileType,
         session_id: 'chatwoot:' + conversationId,
         conversation_id: conversationId,
         user_id: senderId || 'conversation:' + conversationId,
