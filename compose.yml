@@ -18,6 +18,7 @@ volumes:
   caddy_data:
   caddy_config:
   chatwoot_storage:
+  speaches_model_cache:
 
 networks:
   # Rede compartilhada da aplicação; o overlay público adiciona Caddy e Tunnel.
@@ -28,6 +29,9 @@ networks:
   waha_apps:
     # Rede interna dedicada à fila do WAHA Apps.
     internal: true
+
+  # Rede dedicada entre n8n e o serviço de transcrição.
+  speech:
 
 x-chatwoot-environment: &chatwoot-environment 
   NODE_ENV: production
@@ -151,6 +155,36 @@ services:
     networks:
       - edge
       - backend
+      - speech
+    <<: *default-logging
+
+  # Transcrição local de áudio via faster-whisper/Speaches.
+  speaches:
+    image: ghcr.io/speaches-ai/speaches:${SPEACHES_VERSION:?SPEACHES_VERSION is required}
+    restart: unless-stopped
+    profiles: ["audio"]
+    ports:
+      # API local para administração/testes; não fica exposta à rede externa.
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - speaches_model_cache:/home/ubuntu/.cache/huggingface/hub
+    environment:
+      - WHISPER__INFERENCE_DEVICE=cuda
+      - WHISPER__COMPUTE_TYPE=float16
+      # Libera VRAM 5 minutos após o último uso, preservando o cache do modelo em disco.
+      - STT_MODEL_TTL=300
+      # PRELOAD_MODELS: Opcional. O Speaches encerra a inicialização (exit) se o modelo falhar
+      # ao baixar ou se houver oscilação de rede no boot. Mantido comentado por resiliência:
+      # - PRELOAD_MODELS='["Systran/faster-whisper-medium"]'
+    networks:
+      - speech
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     <<: *default-logging
 
   postgres-backup:
