@@ -2,30 +2,18 @@
 
 O Speaches executa o faster-whisper localmente e oferece uma API compatível com o formato OpenAI para transcrever áudios. O serviço é separado do Ollama: o Speaches transcreve; o modelo de linguagem do agente recebe o texto resultante.
 
-## Ativar o serviço
+## Inicialização e GPU
 
-O serviço Speaches usa CUDA e fica no perfil opcional `audio`. Assim, a stack principal pode iniciar em computadores sem GPU NVIDIA; a transcrição local só fica disponível quando o perfil for ativado em uma máquina com suporte a GPU NVIDIA no Docker.
-
-```bash
-# Linux/macOS: inicia a stack incluindo o serviço Speaches
-COMPOSE_PROFILES=audio make up
-```
-
-No PowerShell:
-
-```powershell
-$env:COMPOSE_PROFILES = "audio"
-make up
-```
-
-Sem o perfil `audio`, o container Speaches não é iniciado. O restante da stack pode ser iniciado normalmente com `make up`. As etapas para criar e preencher o `.env` estão no [README do projeto](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/README.md).
+O Speaches inicia junto com a stack padrão usando `make up`; não é mais necessário ativar o perfil `audio`. A imagem usa CUDA, então o host precisa ter GPU NVIDIA e o Docker configurado para disponibilizá-la. Sem esse suporte, o `up` padrão pode falhar. Consulte os pré-requisitos no [README do projeto](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/README.md).
 
 ## Rede, porta e cache
 
 - O n8n acessa o Speaches pela rede Docker dedicada, no endereço `http://speaches:8000`.
 - A porta do host é vinculada somente a `127.0.0.1:8000`; ela não é publicada pelo Caddy nem pelo Cloudflare Tunnel.
 - Os modelos ficam no volume persistente `speaches_model_cache` e sobrevivem à recriação do container.
-- `STT_MODEL_TTL=300` permite descarregar o modelo da VRAM após cinco minutos sem uso; o cache em disco permanece.
+- `STT_MODEL_TTL=-1` e `WHISPER__TTL=-1` cobrem os nomes usados no Speaches 0.9+ e 0.8.x, respectivamente. O modelo fica na VRAM depois do primeiro uso; isso não faz preload. O cache em disco permanece se o modelo for descarregado.
+- O `healthcheck` consulta `/health` e indica se a API responde; não confirma que um modelo foi carregado nem reinicia sozinho um processo marcado como `unhealthy`.
+- Como o modelo permanece na VRAM após o uso, ele compartilha memória da GPU com o Ollama; ajuste o TTL se houver pressão de memória.
 - A imagem CUDA configurada está em [`versions.env`](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/versions.env). A seleção de GPU requer suporte NVIDIA no ambiente Docker.
 
 ## Chamada pelo n8n

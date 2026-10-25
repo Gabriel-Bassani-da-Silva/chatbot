@@ -162,7 +162,6 @@ services:
   speaches:
     image: ghcr.io/speaches-ai/speaches:${SPEACHES_VERSION:?SPEACHES_VERSION is required}
     restart: unless-stopped
-    profiles: ["audio"]
     ports:
       # API local para administração/testes; não fica exposta à rede externa.
       - "127.0.0.1:8000:8000"
@@ -171,11 +170,19 @@ services:
     environment:
       - WHISPER__INFERENCE_DEVICE=cuda
       - WHISPER__COMPUTE_TYPE=float16
-      # Libera VRAM 5 minutos após o último uso, preservando o cache do modelo em disco.
-      - STT_MODEL_TTL=300
+      # Os nomes cobrem Speaches 0.8.x (WHISPER__TTL) e versões 0.9+ (STT_MODEL_TTL).
+      # -1 mantém o modelo em VRAM depois do primeiro uso; não faz preload.
+      - STT_MODEL_TTL=-1
+      - WHISPER__TTL=-1
       # PRELOAD_MODELS: Opcional. O Speaches encerra a inicialização (exit) se o modelo falhar
       # ao baixar ou se houver oscilação de rede no boot. Mantido comentado por resiliência:
       # - PRELOAD_MODELS='["Systran/faster-whisper-medium"]'
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     networks:
       - speech
     deploy:

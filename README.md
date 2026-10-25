@@ -9,7 +9,8 @@ Ecossistema de assistente virtual integrado ao WhatsApp, Chatwoot, WAHA, n8n, Re
 1. **[Docker e Docker Compose](https://www.docker.com/products/docker-desktop/):** Para executar a infraestrutura de containers.
 2. **[Ollama](https://ollama.com/download):** Para rodar os modelos de IA (Llama / Nomic) localmente.
 3. **Smartphone com WhatsApp:** Para escanear o QR Code da API do [WAHA](https://waha.devlike.pro/docs/).
-4. **[GNU Make](https://www.gnu.org/software/make/) (Opcional):** Para executar comandos e atalhos do projeto.
+4. **[GPU NVIDIA configurada no Docker](https://docs.docker.com/compose/how-tos/gpu-support/):** Necessária porque o Speaches usa CUDA e inicia junto com a stack padrão.
+5. **[GNU Make](https://www.gnu.org/software/make/) (Opcional):** Para executar comandos e atalhos do projeto.
 
 ---
 
