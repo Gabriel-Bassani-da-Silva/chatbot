@@ -1,0 +1,74 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Convalidação Logística",
+    "fonte": "https://fatecbb.cps.sp.gov.br/convalidacao-logistica/",
+    "resumo": "A convalidação de estágio refere-se aos casos em que o aluno exerce emprego com registro em Carteira Profissional ou casos de trabalho autônomo ou de prestação de serviços devidamente regularizado junto aos órgãos competentes, desenvolvendo atividades compatíveis com o curso.",
+    "dados_estruturados": {
+        "Convalidação de estágio": {
+            "description": "Reconhecimento de atividade profissional já exercida, regularizada e compatível com Logística; não é a abertura de um novo estágio. Há documentos diferentes para funcionário, MEI prestador de serviços e proprietário de empresa.",
+            "requirements_by_case": {
+                "1 — Aluno funcionário de empresa do mesmo segmento do curso": {
+                    "A — Solicitação de equivalência": "Solicitação de Processo de Equivalência a Estágio Supervisionado (Anexo 7), preenchida e assinada; entrega em 1 via.",
+                    "B — Carteira de Trabalho": "Cópia da Carteira de Trabalho digital com dados pessoais e contrato de trabalho. A página específica de convalidação detalha cópias autenticadas da identificação (frente e verso), do contrato e de eventuais alterações funcionais.",
+                    "B2 — Ficha de Registro do Empregado": "Cópia simples da Ficha de Registro do Empregado; não é necessária autenticação.",
+                    "C — Declaração da empresa": "Declaração com a data de admissão e descrição pormenorizada das atividades efetivamente exercidas, em papel timbrado, com firma reconhecida e carimbo contendo CNPJ e razão social da empresa (Anexo 8 — Declaração de Horas Estagiadas).",
+                    "Entrega": "Os documentos da situação do aluno e a solicitação preenchida e assinada devem ser entregues impressos ao professor responsável pelo estágio."
+                },
+                "2 — Aluno prestador de serviços (MEI), em atividade compatível com o curso": {
+                    "A — Solicitação de equivalência": "Solicitação de Processo de Equivalência a Estágio Supervisionado (Anexo 7), preenchida e assinada.",
+                    "B — Situação cadastral": "Comprovante de inscrição e situação cadastral do MEI.",
+                    "C — Declaração da empresa tomadora": "Documento em papel timbrado da empresa tomadora do serviço, com descrição pormenorizada das atividades exercidas (Anexo 8 — Declaração de Horas Estagiadas).",
+                    "Entrega": "Os documentos da situação do aluno e a solicitação preenchida e assinada devem ser entregues impressos ao professor responsável pelo estágio."
+                },
+                "3 — Aluno proprietário de empresa do mesmo segmento do curso": {
+                    "A — Solicitação de equivalência": "Solicitação de Processo de Equivalência a Estágio Supervisionado (Anexo 7), preenchida e assinada.",
+                    "B — Contrato social": "Cópia do contrato social da empresa.",
+                    "C — Situação cadastral": "Comprovante de inscrição e situação cadastral da empresa.",
+                    "D — Declaração de atividades": "Documento em papel timbrado da empresa tomadora do serviço, com descrição pormenorizada das atividades exercidas (Anexo 8 — Declaração de Horas Estagiadas).",
+                    "Entrega": "Os documentos da situação do aluno e a solicitação preenchida e assinada devem ser entregues impressos ao professor responsável pelo estágio."
+                }
+            },
+            "common_final_documents": {
+                "aplicabilidade": "Etapa final comum a quem realizou estágio e a quem teve a atividade profissional convalidada.",
+                "itens": {
+                    "Relatório final (Anexo 5)": "Descrição pormenorizada das atividades do período computado para estágio; para convalidação, a página oficial especifica 240 horas e detalhamento das ações, atividades, metodologias e procedimentos.",
+                    "Ficha de Avaliação de Desempenho do Estagiário (Anexo 6)": "Documento final impresso, conforme a orientação do responsável de que os documentos finais se aplicam aos dois caminhos."
+                }
+            },
+            "delivery": "Os documentos da situação do aluno e a solicitação preenchida e assinada devem ser entregues impressos ao professor responsável pelo estágio.",
+            "source_detail_for_employee": "A página específica de convalidação também detalha as cópias autenticadas da Carteira de Trabalho, a Ficha de Registro do Empregado e a declaração de atividades em papel timbrado, com firma reconhecida e carimbo contendo CNPJ e razão social."
+        },
+        "Links oficiais": {
+            "Anexo 5 — Relatório final": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo5_relatorio_final.doc",
+            "Anexo 7 — Solicitação de equivalência de estágio supervisionado": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo7_estagio_supervisionado.doc",
+            "Anexo 8 — Declaração de horas estagiadas": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo8_declaracao_horas_estagiadas.doc",
+            "Lei de Estágio (Lei nº 11.788/2008)": "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2008/lei/l11788.htm"
+        }
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "O que é a convalidação de estágio em Logística?",
+            "resposta": "Também chamada de aproveitamento ou equivalência de estágio, vale para o aluno que exerce emprego com registro em Carteira Profissional, ou trabalho autônomo ou prestação de serviços devidamente regularizado, com atividades compatíveis com o curso."
+        },
+        {
+            "pergunta": "Quais documentos preciso para convalidar o estágio sendo funcionário (CLT)?",
+            "resposta": "Cópias autenticadas da Carteira de Trabalho (identificação com foto frente e verso, contrato de trabalho e eventuais alterações funcionais); cópia simples da Ficha de Registro do Empregado; declaração da empresa em papel timbrado, com firma reconhecida e carimbo com CNPJ e razão social (Anexo 8); Solicitação de Equivalência de Estágio Supervisionado (Anexo 7), em 1 via; e Relatório Final (Anexo 5)."
+        },
+        {
+            "pergunta": "O que deve conter o relatório final da convalidação?",
+            "resposta": "O Relatório Final (Anexo 5) deve descrever de forma pormenorizada as atividades do período computado para estágio (240 horas), incluindo ações, atividades, sua importância e pertinência, metodologias e procedimentos."
+        },
+        {
+            "pergunta": "Onde baixo os anexos da convalidação?",
+            "resposta": "Anexo 5 (relatório final): https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo5_relatorio_final.doc. Anexo 7 (solicitação de equivalência): https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo7_estagio_supervisionado.doc. Anexo 8 (declaração de horas estagiadas): https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo8_declaracao_horas_estagiadas.doc"
+        },
+        {
+            "pergunta": "Onde entrego os documentos da convalidação?",
+            "resposta": "Os documentos da sua situação e a solicitação preenchida e assinada devem ser entregues impressos ao professor responsável pelo estágio."
+        },
+        {
+            "pergunta": "Qual a lei que regula o estágio?",
+            "resposta": "A Lei nº 11.788/2008: https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2008/lei/l11788.htm"
+        }
+    ]
+}

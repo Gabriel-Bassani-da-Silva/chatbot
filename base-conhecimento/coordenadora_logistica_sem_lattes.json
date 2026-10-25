@@ -1,0 +1,24 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Responsável por estágios — Logística",
+    "fonte": "https://fatecbb.cps.sp.gov.br/coordenadora/",
+    "resumo": "Eliamar Francelino do Prado é a responsável atual pelas questões de estágio do curso de Logística.",
+    "dados_estruturados": {
+        "contato": "estagio.logistica@fatecbb.edu.br",
+        "atendimento": "Terças e quintas, das 13h às 18h"
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Quem é a responsável pelos estágios de Logística?",
+            "resposta": "Profa. Me. Eliamar Francelino do Prado."
+        },
+        {
+            "pergunta": "Qual o e-mail para assuntos de estágio de Logística?",
+            "resposta": "estagio.logistica@fatecbb.edu.br"
+        },
+        {
+            "pergunta": "Qual o horário de atendimento da responsável pelo estágio de Logística?",
+            "resposta": "Terças e quintas, das 13h às 18h."
+        }
+    ]
+}

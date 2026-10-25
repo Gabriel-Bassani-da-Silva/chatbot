@@ -1,0 +1,419 @@
+{
+  "name": "Processar anexos — Normalização multimodal Chatwoot",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "a40accef-aca9-4f02-a588-8c96f13c3ac7",
+      "name": "Entrada — anexos classificados",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const attachment = $json.attachmentItem ?? {};\nconst kind = String(attachment.kind ?? 'unknown').toLowerCase();\nconst MAX_AUDIO_SECONDS = 60;\nconst MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;\nconst rawSize = attachment.sizeBytes;\nconst fileSize = rawSize === null || rawSize === undefined || rawSize === '' ? null : Number(rawSize);\nlet status = 'unsupported';\nlet step = 'unsupported_attachment_type';\nlet downloadUrl = '';\nconst candidate = String(attachment.dataUrl ?? '').trim();\nfunction readDurationSeconds(value) {\n  if (typeof value === 'number' && Number.isFinite(value) && value >= 0) return value;\n  if (typeof value !== 'string' || !value.trim()) return null;\n  const raw = value.trim();\n  if (/^\\d+(?:\\.\\d+)?$/.test(raw)) return Number(raw);\n  const parts = raw.split(':').map(Number);\n  if (parts.some(part => !Number.isFinite(part) || part < 0) || parts.length > 3) return null;\n  return parts.reduce((total, part) => total * 60 + part, 0);\n}\nfunction resolveAllowedUrl(value) {\n  try {\n    const url = value.startsWith('/') && !value.startsWith('//') ? new URL('http://chatwoot-web:3000' + value) : new URL(value);\n    const internal = url.protocol === 'http:' && url.hostname === 'chatwoot-web' && url.port === '3000';\n    const publicChatwoot = url.protocol === 'https:' && url.hostname === 'chatwoot.fatecn8nabc.dpdns.org' && !url.port;\n    return (internal || publicChatwoot) && !url.username && !url.password ? url.toString() : '';\n  } catch { return ''; }\n}\nconst durationSeconds = readDurationSeconds(attachment.durationSeconds);\nif (fileSize === null || !Number.isFinite(fileSize) || fileSize < 0) {\n  step = 'attachment_size_unavailable';\n} else if (fileSize > MAX_ATTACHMENT_BYTES) {\n  step = 'attachment_exceeds_10mb_limit';\n} else if (kind === 'image') {\n  step = 'image_content_not_processed';\n} else if (kind === 'document') {\n  step = 'document_content_not_read_by_policy';\n} else if (kind === 'audio') {\n  if (durationSeconds !== null && durationSeconds > MAX_AUDIO_SECONDS) {\n    step = 'audio_over_60_seconds';\n  } else {\n    downloadUrl = resolveAllowedUrl(candidate);\n    if (downloadUrl) {\n      status = 'readyForDownload';\n      step = durationSeconds === null ? 'duration_will_be_checked_after_download' : '';\n    } else {\n      status = 'pending';\n      step = 'attachment_url_missing_or_invalid';\n    }\n  }\n}\nreturn { json: { ...$json, attachmentItem: { ...attachment, sizeBytes: fileSize, durationSeconds }, downloadUrl, attachmentStatus: status, normalizationPendingStep: step } };"
+      },
+      "id": "23c1da18-3e0e-49b2-bd9d-f5afde322583",
+      "name": "Validar URL e formato",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        0
+      ],
+      "notes": "Fail-closed: só permite downloads de chatwoot-web:3000 ou https://chatwoot.fatecn8nabc.dpdns.org."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "download-ready-01",
+                    "leftValue": "={{ $json.attachmentStatus }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "readyForDownload"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "Download liberado"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "download-pending-01",
+                    "leftValue": "={{ $json.attachmentStatus }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "pending"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "Pendente"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "download-unsupported-01",
+                    "leftValue": "={{ $json.attachmentStatus }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "unsupported"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "Não suportado"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Outro status"
+        }
+      },
+      "id": "2383a0e9-8703-48c3-905f-7133ddcb8c89",
+      "name": "Decidir download ou retorno seguro",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1088,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.downloadUrl }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 3
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 30000,
+          "sendCredentialsOnCrossOriginRedirect": false
+        }
+      },
+      "id": "43893adf-e06b-4ce4-9337-9eaccecb44cf",
+      "name": "Baixar anexo validado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1360,
+        -176
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RU2a92xV2to4mSwo",
+          "name": "Header Auth account"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "notes": "Reutiliza a credencial Chatwoot já existente; redirects cross-origin não recebem a credencial."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "route-audio-01",
+                    "leftValue": "={{ $('Validar URL e formato').item.json.attachmentItem.kind }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "audio"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "Áudio"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Formato não suportado"
+        }
+      },
+      "id": "4666fe23-9431-48d2-98b5-a14ab2420216",
+      "name": "Encaminhar anexo ao processador",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1920,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const source = $json;\nconst kind = String(source.attachmentItem?.kind ?? 'unknown').toLowerCase();\nconst fallbackStep = kind === 'image' ? 'image_content_not_processed' : kind === 'document' ? 'document_content_not_read_by_policy' : 'no_local_extractor_for_format';\nreturn { json: { ...source, attachmentText: '', attachmentStatus: 'unsupported', normalizationPendingStep: source.normalizationPendingStep || fallbackStep } };"
+      },
+      "id": "13c02759-e546-43c8-8fa4-d18b5242fded",
+      "name": "Retornar status — formato sem extrator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        272
+      ],
+      "notes": "Formato desconhecido ou não suportado é fail-closed."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/** Converte falhas de download/visão/extração em estado interno, sem stack trace. */\nconst source = $('Validar URL e formato').item.json;\nconst isAudio = source.attachmentItem?.kind === 'audio';\nreturn { json: { ...source, attachmentText: '', attachmentStatus: 'failed', normalizationPendingStep: isAudio ? 'audio_download_failed' : 'attachment_processing_failed' } };"
+      },
+      "id": "918266a0-3b4e-481d-a309-487fd241b19c",
+      "name": "Converter falha em status seguro",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        48
+      ],
+      "notes": "Não repassa a mensagem técnica ao usuário; converte a falha em metadado para o consolidado e o agente."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/** Reassocia metadados validados ao binário baixado antes do roteamento. */\nconst source = $('Validar URL e formato').item.json;\nconst output = { json: source };\nif (typeof $binary !== 'undefined' && $binary) output.binary = $binary;\nreturn output;"
+      },
+      "id": "3e435c53-138e-48f9-8785-72840c2910c7",
+      "name": "Restaurar metadados e binário",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        -176
+      ],
+      "notes": "Reassocia o JSON validado ao binário do HTTP Request antes da chamada do subworkflow."
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RDtQNcfjRfXGKHZq"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "4c64c458-4ae8-41ae-b592-fe6cd2d06906",
+      "name": "Chamar processador — áudio",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2208,
+        -320
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/** Preserva a razão da pendência para o consolidado e o agente. */\nreturn { json: { ...$json, attachmentText: '', attachmentStatus: 'pending' } };"
+      },
+      "id": "2e9b5f73-b3d4-4fd3-856d-e37e0515401b",
+      "name": "Registrar anexo pendente",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        80
+      ],
+      "notes": "URL ausente/inválida ou metadados incompletos: mantém o motivo no contexto interno e não interrompe a conversa."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Validar URL e formato": {
+      "main": [
+        [
+          {
+            "node": "Decidir download ou retorno seguro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decidir download ou retorno seguro": {
+      "main": [
+        [
+          {
+            "node": "Baixar anexo validado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar anexo pendente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retornar status — formato sem extrator",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retornar status — formato sem extrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar anexo validado": {
+      "main": [
+        [
+          {
+            "node": "Restaurar metadados e binário",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Converter falha em status seguro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restaurar metadados e binário": {
+      "main": [
+        [
+          {
+            "node": "Encaminhar anexo ao processador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encaminhar anexo ao processador": {
+      "main": [
+        [
+          {
+            "node": "Chamar processador — áudio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retornar status — formato sem extrator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chamar processador — áudio": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Converter falha em status seguro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Entrada — anexos classificados": {
+      "main": [
+        [
+          {
+            "node": "Validar URL e formato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "af70dd87-084c-402b-bc29-465cf508c04a",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "b8307148f7a3f12364a5af731a5259298a076a8b600eb47f1ee91081801822bf"
+  },
+  "nodeGroups": [],
+  "id": "B34exXTSXsfHnF8O",
+  "tags": []
+}

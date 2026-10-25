@@ -1,0 +1,140 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Estágio Big Data no Agronegócio",
+    "fonte": "https://fatecbb.cps.sp.gov.br/estagio-big-data-no-agronegocio/",
+    "resumo": "O objetivo do Estágio curricular obrigatório é o de incentivar o estudante no exercício e na análise das práticas nos diversos tipos de organizações.",
+    "dados_estruturados": {
+        "O que é estágio curricular supervisionado?": {
+            "description": "A definição de estágio está no art. 1º da Lei de estágio: 'Estágio é ato educativo escolar supervisionado, desenvolvido no ambiente de trabalho, que visa à preparação para o trabalho produtivo de educandos que estejam frequentando o ensino regular em instituições de educação superior, de educação profissional, de ensino médio, da educação especial e dos anos finais do ensino fundamental, na modalidade profissional da educação de jovens e adultos'. (Brasil, 2008).",
+            "type": "string"
+        },
+        "Quais as formas possíveis de estágio na Fatec?": {
+            "description": "A Lei de Estágio apresenta duas formas possíveis de estágio, são elas o estágio obrigatório e não obrigatório.",
+            "type": "string"
+        },
+        "A partir de qual semestre o estágio é obrigatório?": {
+            "description": "O estágio obrigatório é cumprido a partir do terceiro semestre do curso.",
+            "type": "string"
+        },
+        "Qual a duração máxima de um estágio?": {
+            "description": "De acordo com o art. 11 da Lei de Estágio, o estágio não poderá exceder 2 (dois) anos, exceto quando se tratar de estagiário portador de deficiência.",
+            "type": "string"
+        },
+        "O que é a convalidação de estágio?": {
+            "description": "A convalidação de estágio, também chamada de aproveitamento de estágio ou equivalência de estágio, refere-se aos casos em que o aluno exerce emprego com registro em Carteira Profissional, casos de trabalho autônomo ou de prestação de serviços, devidamente regularizado junto aos órgãos competentes, desenvolvendo atividades compatíveis com o curso.",
+            "type": "string"
+        },
+        "Documentos iniciais": {
+            "description": "O Termo de Compromisso de Estágio e o Plano de Atividades de Estágio devem ser preenchidos com todos os dados necessários e assinados pelo estagiário e pela empresa (preenchimento deve ser eletronicamente) em 3 vias impressas e entregue na secretaria acadêmica;",
+            "type": "string",
+            "aplicabilidade": "Somente para quem vai iniciar e realizar estágio efetivo; não se aplica ao pedido de convalidação.",
+            "observacao_inicio": "As atividades de estágio só poderão ser iniciadas após a entrega de todos os documentos assinados pelas três partes (Fatec, Empresa e Aluno), em 3 vias impressas, na secretaria acadêmica; junto, cópia do seguro contra acidentes pessoais (1 via impressa)."
+        },
+        "Apólice de seguro": {
+            "description": "A Concedente se obriga a fazer o Seguro de Acidentes Pessoais ocorridos nos locais de estágio, conforme legislação vigente.",
+            "type": "string",
+            "aplicabilidade": "Exigência do início de estágio efetivo; não é documento para iniciar um pedido de convalidação."
+        },
+        "Documentos de convalidação": {
+            "description": "A convalidação reconhece atividade profissional já exercida, regularizada e compatível com o curso; não é a abertura de um novo estágio. Os documentos variam conforme a situação do aluno.",
+            "type": "object",
+            "casos": {
+                "1 — Aluno funcionário de empresa do mesmo segmento do curso": {
+                    "A — Solicitação de equivalência": "Solicitação de Processo de Equivalência a Estágio Supervisionado (Anexo 7), preenchida e assinada; entrega em 1 via.",
+                    "B — Carteira de Trabalho": "Cópia da Carteira de Trabalho digital com dados pessoais e contrato de trabalho. A página específica de convalidação detalha cópias autenticadas da identificação (frente e verso), do contrato e de eventuais alterações funcionais.",
+                    "B2 — Ficha de Registro do Empregado": "Cópia simples da Ficha de Registro do Empregado; não é necessária autenticação.",
+                    "C — Declaração da empresa": "Declaração com a data de admissão e descrição pormenorizada das atividades efetivamente exercidas, em papel timbrado, com firma reconhecida e carimbo contendo CNPJ e razão social da empresa (Anexo 8 — Declaração de Horas Estagiadas).",
+                    "Entrega": "Os documentos da situação do aluno e a solicitação preenchida e assinada devem ser entregues impressos ao professor responsável pelo estágio."
+                },
+                "2 — Aluno prestador de serviços (MEI), em atividade compatível com o curso": {
+                    "A — Solicitação de equivalência": "Solicitação de Processo de Equivalência a Estágio Supervisionado (Anexo 7), preenchida e assinada.",
+                    "B — Situação cadastral": "Comprovante de inscrição e situação cadastral do MEI.",
+                    "C — Declaração da empresa tomadora": "Documento em papel timbrado da empresa tomadora do serviço, com descrição pormenorizada das atividades exercidas (Anexo 8 — Declaração de Horas Estagiadas).",
+                    "Entrega": "Os documentos da situação do aluno e a solicitação preenchida e assinada devem ser entregues impressos ao professor responsável pelo estágio."
+                },
+                "3 — Aluno proprietário de empresa do mesmo segmento do curso": {
+                    "A — Solicitação de equivalência": "Solicitação de Processo de Equivalência a Estágio Supervisionado (Anexo 7), preenchida e assinada.",
+                    "B — Contrato social": "Cópia do contrato social da empresa.",
+                    "C — Situação cadastral": "Comprovante de inscrição e situação cadastral da empresa.",
+                    "D — Declaração de atividades": "Documento em papel timbrado da empresa tomadora do serviço, com descrição pormenorizada das atividades exercidas (Anexo 8 — Declaração de Horas Estagiadas).",
+                    "Entrega": "Os documentos da situação do aluno e a solicitação preenchida e assinada devem ser entregues impressos ao professor responsável pelo estágio."
+                }
+            },
+            "entrega_comum": "Em cada caso, os documentos da situação do aluno e a solicitação preenchida e assinada devem ser entregues impressos ao professor responsável pelo estágio.",
+            "observacao_documental": "Para funcionário, a página específica de convalidação detalha autenticação e páginas da Carteira de Trabalho; a página geral de estágio também descreve cópia digital com dados pessoais e contrato. Conferir a orientação atual do Departamento de Estágio se houver dúvida sobre a forma da cópia."
+        },
+        "Documentos finais": {
+            "description": "Ao término do período de estágio, o aluno deverá entregar ao professor responsável pelo estágio impresso: 1 – Relatório final e 2 – Avaliação de Desempenho do Estagiário.",
+            "type": "string",
+            "aplicabilidade": "Etapa final comum a quem realizou estágio e a quem teve a atividade profissional convalidada.",
+            "itens_comuns": {
+                "Relatório final (Anexo 5)": "Descrição pormenorizada das atividades do período computado para estágio; para convalidação, a página oficial especifica 240 horas e detalhamento das ações, atividades, metodologias e procedimentos.",
+                "Ficha de Avaliação de Desempenho do Estagiário (Anexo 6)": "Documento final impresso, conforme a orientação do responsável de que os documentos finais se aplicam aos dois caminhos."
+            },
+            "prazo_entrega": "Os documentos de término de estágio deverão ser entregues (no máximo) na semana seguinte à conclusão do mesmo. A aprovação do estágio será lançada no Siga no final do semestre em que o estágio for concluído."
+        },
+        "Responsável e atendimento": {
+            "Responsável": "Profa. Me. Eliamar Francelino do Prado",
+            "E-mail": "estagio.bigdata@fatecbb.edu.br",
+            "Atendimento": "Quarta e Quinta das 18:00 às 19:00",
+            "Vagas": "Em construção"
+        },
+        "Links oficiais": {
+            "TCE estágio obrigatório remunerado": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-obrigatorio-remunerado-BigData.docx",
+            "TCE estágio obrigatório não remunerado": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-obrigatorio-nao-remunerado-BigData.docx",
+            "TCE estágio não obrigatório remunerado": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-nao-obrigatorio-remunerado-BigData.docx",
+            "Anexo 5 — Relatório final": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/06/anexo5_relatorio_finalBDA.doc",
+            "Anexo 6 — Ficha de avaliação de desempenho do estagiário": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/08/anexo6_ficha_avaliacao_desempenho_estagiario.docx",
+            "Anexo 7 — Solicitação de equivalência de estágio supervisionado": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo7_estagio_supervisionado.doc",
+            "Anexo 8 — Declaração de horas estagiadas": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo8_declaracao_horas_estagiadas.doc",
+            "Lei de Estágio (Lei nº 11.788/2008)": "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2008/lei/l11788.htm",
+            "Agentes de integração credenciados": "https://cpc.cps.sp.gov.br/agentes-de-integracao/"
+        }
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Quem é a responsável pelo estágio de Big Data no Agronegócio?",
+            "resposta": "Profa. Me. Eliamar Francelino do Prado. E-mail: estagio.bigdata@fatecbb.edu.br. Atendimento: Quarta e Quinta, das 18:00 às 19:00."
+        },
+        {
+            "pergunta": "A partir de qual semestre o estágio é obrigatório?",
+            "resposta": "O estágio obrigatório é cumprido a partir do terceiro semestre do curso."
+        },
+        {
+            "pergunta": "Qual a diferença entre estágio obrigatório e não obrigatório?",
+            "resposta": "O obrigatório é estipulado no projeto do curso e sua carga horária é essencial para aprovação e obtenção do diploma. O não obrigatório é uma atividade opcional, acrescida à carga horária regular e obrigatória."
+        },
+        {
+            "pergunta": "Qual a duração máxima de um estágio?",
+            "resposta": "De acordo com o art. 11 da Lei de Estágio, o estágio não pode exceder 2 anos, exceto para estagiário com deficiência."
+        },
+        {
+            "pergunta": "Quais documentos preciso entregar para começar o estágio?",
+            "resposta": "Termo de Compromisso de Estágio (TCE) e Plano de Atividades de Estágio, preenchidos eletronicamente, assinados pelo estagiário e pela empresa, em 3 vias impressas entregues na secretaria acadêmica, junto com 1 via impressa da cópia do seguro contra acidentes pessoais. O estágio só pode começar após a entrega de todos os documentos assinados pelas três partes (Fatec, empresa e aluno)."
+        },
+        {
+            "pergunta": "Onde baixo o Termo de Compromisso de Estágio (TCE)?",
+            "resposta": "Obrigatório remunerado: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-obrigatorio-remunerado-BigData.docx. Obrigatório não remunerado: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-obrigatorio-nao-remunerado-BigData.docx. Não obrigatório remunerado: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-nao-obrigatorio-remunerado-BigData.docx"
+        },
+        {
+            "pergunta": "O que preciso saber sobre a apólice de seguro?",
+            "resposta": "Deve ser entregue a APÓLICE (e não a proposta), obtida na seguradora ou prestadora de serviços, constando número da apólice e seguradora. A vigência da apólice deve abranger todo o período do estágio, do início ao término."
+        },
+        {
+            "pergunta": "Quais documentos entrego ao final do estágio?",
+            "resposta": "Relatório final (Anexo 5): https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/06/anexo5_relatorio_finalBDA.doc e Ficha de avaliação de desempenho do estagiário (Anexo 6): https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/08/anexo6_ficha_avaliacao_desempenho_estagiario.docx. Ambos impressos, entregues ao professor responsável pelo estágio no máximo na semana seguinte à conclusão. A aprovação é lançada no SIGA no final do semestre em que o estágio for concluído."
+        },
+        {
+            "pergunta": "Qual o prazo para entregar os documentos de estágio em 2026?",
+            "resposta": "Até 27 de novembro de 2026."
+        },
+        {
+            "pergunta": "Como funciona a convalidação de estágio?",
+            "resposta": "Vale para quem trabalha com registro em carteira, é autônomo/prestador de serviços regularizado ou é proprietário de empresa do mesmo segmento do curso. Veja: https://fatecbb.cps.sp.gov.br/convalidacao-big-data-no-agronegocio/"
+        },
+        {
+            "pergunta": "Onde vejo os agentes de integração credenciados?",
+            "resposta": "https://cpc.cps.sp.gov.br/agentes-de-integracao/"
+        }
+    ]
+}

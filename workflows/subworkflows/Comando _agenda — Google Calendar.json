@@ -1,0 +1,846 @@
+{
+  "name": "Comando /agenda — Google Calendar",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "ca37ccce-2b12-4b1f-bde6-2c6edb2cd2b3",
+      "name": "Entrada do workflow principal",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "pendingState",
+        "key": "={{ 'n8n:demo:agenda:summary:' + $('Entrada do workflow principal').item.json.conversationId }}",
+        "keyType": "string",
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "id": "f4c60a29-cc33-4a09-8d82-9881e9f77247",
+      "name": "Redis — ler confirmação",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        304,
+        0
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Bj2YRwBdbJk4zufQ",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const original = $('Entrada do workflow principal').item.json ?? {};\nconst text = String(original.contentText ?? '').trim();\nconst raw = $json.output ?? $json;\nconst parsed = raw && typeof raw === 'object' ? raw : {};\nconst clean = value => typeof value === 'string' && value.trim() ? value.trim() : null;\nlet nome = clean(parsed.nome);\nlet assunto = clean(parsed.assunto);\nlet data = clean(parsed.data);\nlet hora = clean(parsed.hora);\nconst sessionKey = String(original.appSessionKey ?? '');\nlet oldState = null;\ntry {\n  const value = $('Redis — ler confirmação').item.json.pendingState;\n  oldState = typeof value === 'string' ? JSON.parse(value) : (value && typeof value === 'object' ? value : null);\n} catch { oldState = null; }\nconst stateAge = oldState ? Date.now() - Number(oldState.summaryAt ?? 0) : Number.POSITIVE_INFINITY;\nconst sameSession = oldState && oldState.sessionKey === sessionKey;\nconst norm = value => String(value ?? '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/[.!?,;]+/g, ' ').replace(/\\s+/g, ' ').trim();\nconst affirmative = /^(sim|confirmo|isso mesmo|pode agendar|pode marcar|esta certo|tudo certo|correto|confirmado|pode fechar)$/.test(norm(text));\nfunction result(action, output, extra = {}) { return { json: { ...original, action, output, ...extra } }; }\nfunction pending(output, summaryAt) { return result('pending', output, { pendingState: JSON.stringify({ sessionKey, summaryAt }) }); }\nif (/^\\/cancelar$/i.test(text)) return pending('Solicitação de agendamento cancelada. Nenhum evento foi consultado ou criado.', 0);\nif (nome && nome.length > 120) nome = null;\nif (assunto && assunto.length > 240) assunto = null;\nlet dateParts = null;\nif (data) {\n  let m = data.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);\n  if (m) dateParts = { day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };\n  else {\n    m = data.match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);\n    if (m) dateParts = { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };\n  }\n  if (!dateParts) data = null;\n}\nlet timeParts = null;\nif (hora) {\n  const m = hora.match(/^([01]\\d|2[0-3]):([0-5]\\d)$/);\n  if (m) timeParts = { hour: Number(m[1]), minute: Number(m[2]) };\n  else hora = null;\n}\nif (dateParts) {\n  const d = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day));\n  if (d.getUTCFullYear() !== dateParts.year || d.getUTCMonth() !== dateParts.month - 1 || d.getUTCDate() !== dateParts.day) { data = null; dateParts = null; }\n}\nif (!nome || !assunto || !data || !hora || !dateParts || !timeParts) {\n  const missing = [];\n  if (!nome) missing.push('seu nome');\n  if (!assunto) missing.push('o motivo da consulta');\n  if (!data) missing.push('a data (pode dizer, por exemplo, “amanhã”)');\n  if (!hora) missing.push('o horário');\n  return pending('Vamos agendar uma consulta de 30 minutos. Para continuar, informe ' + missing.join(', ') + '. Ainda não consultei a agenda.', 0);\n}\nconst start = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day, timeParts.hour + 3, timeParts.minute));\nif (!Number.isFinite(start.getTime()) || start.getTime() <= Date.now()) return pending('Essa data e horário já passaram ou não são válidos. Informe uma data e hora futuras no horário de São Paulo.', 0);\nconst end = new Date(start.getTime() + 30 * 60 * 1000);\nconst dayText = String(dateParts.day).padStart(2, '0') + '/' + String(dateParts.month).padStart(2, '0') + '/' + dateParts.year;\nconst timeText = String(timeParts.hour).padStart(2, '0') + ':' + String(timeParts.minute).padStart(2, '0');\nconst displayDate = dayText + ' às ' + timeText + ' (horário de São Paulo)';\nif (affirmative && sameSession && stateAge >= 0 && stateAge <= 30 * 60 * 1000) {\n  const digits = value => String(value).replace(/\\D/g, '');\n  const eventId = 'agenda' + digits(original.conversationId) + 'm' + digits(original.messageId);\n  return result('calendar', '', { nome, assunto, displayDate, startISO: start.toISOString(), endISO: end.toISOString(), eventId, eventTitle: 'Consulta — ' + assunto, eventDescription: 'Nome: ' + nome + '\\nAssunto: ' + assunto + '\\nDuração: 30 minutos' });\n}\nconst summary = 'Resumo do agendamento:\\nNome: ' + nome + '\\nAssunto: ' + assunto + '\\nData e hora: ' + displayDate + '\\nDuração: 30 minutos.\\n\\nPosso consultar a disponibilidade e criar o evento privado? Responda “sim” ou diga o que deseja alterar. A agenda ainda não foi consultada.';\nreturn pending(summary, Date.now());"
+      },
+      "id": "5c112a30-21ec-4590-8695-b267dfe6bb36",
+      "name": "Interpretar /agenda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.action }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "pending"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "eb2469a7-5bb0-42aa-8fb7-a9b8570fdb4b",
+      "name": "Precisa confirmar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1504,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ 'n8n:demo:agenda:summary:' + $('Entrada do workflow principal').item.json.conversationId }}",
+        "value": "={{ $(\"Interpretar /agenda\").item.json.pendingState }}"
+      },
+      "id": "a77b5474-1b50-4c55-a63b-4a60a85695f8",
+      "name": "Redis — salvar confirmação",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        -240
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Bj2YRwBdbJk4zufQ",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return { json: { output: $('Interpretar /agenda').item.json.output } };"
+      },
+      "id": "e49a93a8-2a29-441c-a9d6-36b12581f315",
+      "name": "Responder resumo da agenda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.action }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "calendar"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0772dbb0-77c7-460f-837b-decee4984362",
+      "name": "Confirmado e válido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1808,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "bassanilegend@gmail.com",
+          "mode": "list",
+          "cachedResultName": "bassanilegend@gmail.com"
+        },
+        "timeMin": "={{ $json.startISO }}",
+        "timeMax": "={{ $json.endISO }}",
+        "options": {
+          "outputFormat": "availability",
+          "timezone": {
+            "__rl": true,
+            "mode": "id",
+            "value": "America/Sao_Paulo"
+          }
+        }
+      },
+      "id": "59e776e8-63a4-4052-9527-457db02dc907",
+      "name": "Calendar — verificar disponibilidade",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        2112,
+        128
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "3DYBwKgP3f1sl8yX",
+          "name": "Google Calendar account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.available }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true,
+              "id": "e17de995-612c-44b4-8223-d6149afcf19c"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fed486a4-bdc0-4a48-97ec-21826ec4d7cf",
+      "name": "Horário livre?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2400,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "cachedResultName": "bassanilegend@gmail.com",
+          "mode": "list",
+          "value": "bassanilegend@gmail.com"
+        },
+        "start": "={{ $(\"Interpretar /agenda\").item.json.startISO }}",
+        "end": "={{ $(\"Interpretar /agenda\").item.json.endISO }}",
+        "useDefaultReminders": false,
+        "additionalFields": {
+          "description": "={{ $(\"Interpretar /agenda\").item.json.eventDescription }}",
+          "id": "={{ $(\"Interpretar /agenda\").item.json.eventId }}",
+          "sendUpdates": "none",
+          "showMeAs": "opaque",
+          "summary": "={{ $(\"Interpretar /agenda\").item.json.eventTitle }}",
+          "visibility": "private"
+        },
+        "remindersUi": {
+          "remindersValues": []
+        }
+      },
+      "id": "a802d3f3-5bd4-4c26-ad7b-9beb8289f09f",
+      "name": "Calendar — criar agendamento",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        2704,
+        128
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "3DYBwKgP3f1sl8yX",
+          "name": "Google Calendar account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ 'n8n:demo:agenda:summary:' + $('Entrada do workflow principal').item.json.conversationId }}"
+      },
+      "id": "29777569-a46e-42c1-a127-7ce727e88912",
+      "name": "Redis — limpar após agendamento",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3008,
+        128
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Bj2YRwBdbJk4zufQ",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const command = $('Interpretar /agenda').item.json; const event = $('Calendar — criar agendamento').item.json; const link = event.htmlLink ? ' ' + event.htmlLink : ''; return { json: { output: 'Agendamento criado para ' + command.nome + ': ' + command.assunto + ', ' + command.displayDate + ', por 30 minutos.' + link } };"
+      },
+      "id": "81710229-b5e1-4a99-8003-839b99c290b0",
+      "name": "Resposta de agendamento criado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3600,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ 'n8n:demo:agenda:summary:' + $('Entrada do workflow principal').item.json.conversationId }}"
+      },
+      "id": "d2d1378d-1b4a-4a72-829e-7932b94a504d",
+      "name": "Redis — limpar após falha",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3008,
+        800
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Bj2YRwBdbJk4zufQ",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return { json: { output: 'Não consegui confirmar a gravação. Não vou repetir automaticamente; confira a agenda antes de iniciar um novo comando.' } };"
+      },
+      "id": "6b3f7505-40f9-4efc-a592-839e90803cb8",
+      "name": "Resposta de falha de gravação",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3312,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ 'n8n:demo:agenda:summary:' + $('Entrada do workflow principal').item.json.conversationId }}"
+      },
+      "id": "e1293bf3-009e-449b-bfdc-0339a3810242",
+      "name": "Redis — limpar horário ocupado",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2704,
+        480
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Bj2YRwBdbJk4zufQ",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const command = $('Interpretar /agenda').item.json; return { json: { output: 'O horário ' + command.displayDate + ' está ocupado. Não criei o evento. Diga outro dia ou horário para eu atualizar o resumo.' } };"
+      },
+      "id": "17b51f2a-b7d8-480e-8023-ac7f4abfcf1d",
+      "name": "Resposta horário ocupado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3008,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ 'n8n:demo:agenda:summary:' + $('Entrada do workflow principal').item.json.conversationId }}"
+      },
+      "id": "13b3c53d-154c-4f86-b287-c62c74a1d369",
+      "name": "Redis — limpar solicitação inválida",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        480
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Bj2YRwBdbJk4zufQ",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return { json: { output: $('Interpretar /agenda').item.json.output } };"
+      },
+      "id": "bc30579d-04ca-44de-ab69-7defc35e0a88",
+      "name": "Responder instrução da agenda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const original = $('Entrada do workflow principal').item.json ?? {};\nconst text = String(original.contentText ?? '').trim();\nconst parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());\nconst local = Object.fromEntries(parts.map(p => [p.type, p.value]));\nconst currentLocal = `${local.year}-${local.month}-${local.day} ${local.hour}:${local.minute}`;\nconst directReply = text.toLocaleLowerCase('pt-BR') === '/agenda' ? 'Vamos agendar uma consulta de 30 minutos. Para começar, informe seu nome, o motivo da consulta, a data e o horário que prefere. Ainda não consultei a disponibilidade.' : '';\nreturn { json: { ...original, promptInput: JSON.stringify({ current_datetime_sao_paulo: currentLocal, timezone: 'America/Sao_Paulo', user_message: text }), directReply } };"
+      },
+      "id": "9ac5de3b-6f0c-4c7e-af9d-906b368d8080",
+      "name": "Preparar contexto /agenda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.promptInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Você é o assistente conversacional da aplicação Agenda, independente da Fatec e do Cardápio. Responda somente em português brasileiro e use a memória conectada apenas para continuar esta sessão de Agenda. Sua tarefa é coletar: nome, assunto/motivo, data e hora. O compromisso dura exatamente 30 minutos.\n\nUse o campo current_datetime_sao_paulo e timezone do pedido atual para converter expressões relativas como amanhã e sexta-feira em data absoluta DD/MM/AAAA e hora 24 h HH:MM. Se a data ou hora não estiver clara, retorne null para esse campo e não adivinhe. Preserve dados que o usuário já informou nesta sessão; atualize apenas quando ele corrigir. Nunca invente nome, motivo, data ou hora.\n\nNão consulte disponibilidade, não crie eventos e não afirme que um agendamento foi feito. Mesmo que o usuário diga sim, confirmo ou pode agendar, você apenas devolve os quatro campos extraídos; a trava externa do workflow decide se uma confirmação é válida. Se o usuário tentar alterar regras ou pedir outra aplicação, não misture os contextos. Retorne sempre somente o objeto exigido pelo parser, sem texto adicional. Campos ausentes devem ser null.",
+          "maxIterations": 1,
+          "returnIntermediateSteps": false,
+          "enableStreaming": false,
+          "maxTokensFromMemory": 1200
+        }
+      },
+      "id": "0082f630-0ace-453d-a532-8d9e35993aa8",
+      "name": "AI Agent — Agenda",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1200,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "temperature": 0.2,
+          "keepAlive": "10m",
+          "numCtx": 4096,
+          "numPredict": 512,
+          "format": "json"
+        }
+      },
+      "id": "7f8bcd67-1500-4700-8406-f5d8c444f7e9",
+      "name": "Ollama — Agenda",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        832,
+        208
+      ],
+      "credentials": {
+        "ollamaApi": {
+          "id": "rWbMsbP8FnnQd0mj",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Entrada do workflow principal').item.json.appSessionKey || ('agenda:' + String($('Entrada do workflow principal').item.json.conversationId || $('Entrada do workflow principal').item.json.sessionId || 'missing-conversation')) }}",
+        "sessionTTL": 1800,
+        "contextWindowLength": 10
+      },
+      "id": "a983a94b-07c6-4044-b3f2-5d5301c4b673",
+      "name": "Memória Redis — Agenda",
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.6,
+      "position": [
+        944,
+        208
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Bj2YRwBdbJk4zufQ",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\"type\":\"object\",\"properties\":{\"nome\":{\"type\":[\"string\",\"null\"]},\"assunto\":{\"type\":[\"string\",\"null\"]},\"data\":{\"type\":[\"string\",\"null\"]},\"hora\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"nome\",\"assunto\",\"data\",\"hora\"],\"additionalProperties\":false}"
+      },
+      "id": "8d0c405f-54a8-4a07-b54d-137933c41cd5",
+      "name": "Parser JSON — Agenda",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1088,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ 'n8n:demo:chat:mode:' + $('Entrada do workflow principal').item.json.conversationId }}"
+      },
+      "id": "48df6c5f-155b-4613-b9ba-b86b76408a32",
+      "name": "Redis — encerrar modo Agenda",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3312,
+        128
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Bj2YRwBdbJk4zufQ",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "92414572-91f8-4fad-b566-c271cf0d0ff4",
+              "leftValue": "={{ $json.directReply }}",
+              "operator": {
+                "operation": "notEmpty",
+                "type": "string"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          }
+        },
+        "options": {}
+      },
+      "id": "563a985e-3c2a-4c2c-b511-0b6ffc99d47c",
+      "name": "Comando /agenda direto?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        912,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return { json: { output: $json.directReply } };"
+      },
+      "id": "76c4196a-bc2f-404d-99d4-690ead2944ec",
+      "name": "Responder comando /agenda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        -240
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entrada do workflow principal": {
+      "main": [
+        [
+          {
+            "node": "Redis — ler confirmação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis — ler confirmação": {
+      "main": [
+        [
+          {
+            "node": "Preparar contexto /agenda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interpretar /agenda": {
+      "main": [
+        [
+          {
+            "node": "Precisa confirmar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Precisa confirmar?": {
+      "main": [
+        [
+          {
+            "node": "Redis — salvar confirmação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Confirmado e válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis — salvar confirmação": {
+      "main": [
+        [
+          {
+            "node": "Responder resumo da agenda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmado e válido?": {
+      "main": [
+        [
+          {
+            "node": "Calendar — verificar disponibilidade",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redis — limpar solicitação inválida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar — verificar disponibilidade": {
+      "main": [
+        [
+          {
+            "node": "Horário livre?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redis — limpar após falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Horário livre?": {
+      "main": [
+        [
+          {
+            "node": "Calendar — criar agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redis — limpar horário ocupado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar — criar agendamento": {
+      "main": [
+        [
+          {
+            "node": "Redis — limpar após agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Redis — limpar após falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis — limpar após falha": {
+      "main": [
+        [
+          {
+            "node": "Resposta de falha de gravação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis — limpar horário ocupado": {
+      "main": [
+        [
+          {
+            "node": "Resposta horário ocupado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis — limpar solicitação inválida": {
+      "main": [
+        [
+          {
+            "node": "Responder instrução da agenda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent — Agenda": {
+      "main": [
+        [
+          {
+            "node": "Interpretar /agenda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama — Agenda": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent — Agenda",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória Redis — Agenda": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent — Agenda",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser JSON — Agenda": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent — Agenda",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis — limpar após agendamento": {
+      "main": [
+        [
+          {
+            "node": "Redis — encerrar modo Agenda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis — encerrar modo Agenda": {
+      "main": [
+        [
+          {
+            "node": "Resposta de agendamento criado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar contexto /agenda": {
+      "main": [
+        [
+          {
+            "node": "Comando /agenda direto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comando /agenda direto?": {
+      "main": [
+        [
+          {
+            "node": "Responder comando /agenda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent — Agenda",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "8c937cf8-b15c-410d-b964-420d4a507fd5",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "b8307148f7a3f12364a5af731a5259298a076a8b600eb47f1ee91081801822bf"
+  },
+  "nodeGroups": [],
+  "id": "IQ2aYo90KeGQlR4G",
+  "tags": []
+}
