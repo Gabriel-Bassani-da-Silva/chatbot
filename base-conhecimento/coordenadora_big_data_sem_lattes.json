@@ -1,0 +1,24 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Coordenador de Big Data no Agronegócio",
+    "fonte": "https://fatecbb.cps.sp.gov.br/coordenadores/",
+    "resumo": "Prof. Dr. Renan Guilherme Nespolo",
+    "dados_estruturados": {
+        "contato_estagio": "estagio.bigdata@fatecbb.edu.br",
+        "horario_atendimento_estagio": "Terças e quintas, das 13h às 18h"
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Quem é o coordenador do curso de Big Data no Agronegócio?",
+            "resposta": "O coordenador do curso é o Prof. Dr. Renan Guilherme Nespolo."
+        },
+        {
+            "pergunta": "Qual o e-mail para assuntos de estágio de Big Data no Agronegócio?",
+            "resposta": "estagio.bigdata@fatecbb.edu.br"
+        },
+        {
+            "pergunta": "Qual o horário de atendimento da coordenação de Big Data no Agronegócio?",
+            "resposta": "Terças e quintas, das 13h às 18h."
+        }
+    ]
+}

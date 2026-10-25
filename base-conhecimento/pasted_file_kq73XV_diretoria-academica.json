@@ -1,0 +1,34 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Diretoria Acadêmica",
+    "fonte": "https://fatecbb.cps.sp.gov.br/diretoria-academica/",
+    "resumo": "Serviços acadêmicos oferecidos pela Diretoria Acadêmica",
+    "dados_estruturados": {
+        "Tipos de serviços": [
+            "Aproveitamento de estudos (Dispensas)",
+            "Cancelamento de Matrícula",
+            "Desistência de Disciplina",
+            "Inscrição para vagas Remanescentes",
+            "Trancamento total de Matrícula",
+            "Transferências",
+            "Segunda Chamada de Provas",
+            "Solicitação de declarações"
+        ],
+        "Diretora de Serviços Acadêmicos": "Elaine Bento de Albuquerque",
+        "E-mail": "f280acad@cps.sp.gov.br"
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Quais serviços a Diretoria Acadêmica oferece?",
+            "resposta": "Aproveitamento de estudos (dispensas), cancelamento de matrícula, desistência de disciplina, inscrição para vagas remanescentes, trancamento total de matrícula, transferências, segunda chamada de provas e solicitação de declarações."
+        },
+        {
+            "pergunta": "Quem é a diretora de serviços acadêmicos?",
+            "resposta": "Elaine Bento de Albuquerque."
+        },
+        {
+            "pergunta": "Qual o e-mail da Diretoria Acadêmica?",
+            "resposta": "f280acad@cps.sp.gov.br"
+        }
+    ]
+}

@@ -1,0 +1,32 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Comissão Própria de Avaliação – CPA",
+    "fonte": "https://fatecbb.cps.sp.gov.br/comissao-propria-de-avaliacao-cpa/",
+    "resumo": "A Comissão Própria de Avaliação (CPA) tem por finalidade contribuir com o planejamento, a elaboração, a coordenação e o monitoramento da política de autoavaliação institucional, promovendo, no que couber, a interlocução com os órgãos de regulação, supervisão e avaliação.",
+    "dados_estruturados": {
+        "Representante docente": "Prof. Me. Alexandre de Souza Fernandes, Profa. Dra. Ana Lúcia Paschoa Botelho, Prof. Me. Rhadler Herculani",
+        "Representante do corpo técnico administrativo": "David Francisco",
+        "Representante discente": "Jéssica Caroline Fukuda",
+        "Representante da Sociedade Civil": {
+            "Contato": "cpa@fatecbb.edu.br"
+        }
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "O que é a CPA?",
+            "resposta": "A Comissão Própria de Avaliação (CPA) contribui com o planejamento, a elaboração, a coordenação e o monitoramento da política de autoavaliação institucional, promovendo a interlocução com os órgãos de regulação, supervisão e avaliação."
+        },
+        {
+            "pergunta": "Qual o objetivo da autoavaliação da CPA?",
+            "resposta": "Melhorar a qualidade do ensino tecnológico, orientar a expansão da oferta, consolidar a função social do ensino superior e promover o desenvolvimento institucional, em um processo contínuo, sistêmico e participativo."
+        },
+        {
+            "pergunta": "Quem faz parte da CPA?",
+            "resposta": "Representantes docentes: Prof. Me. Alexandre de Souza Fernandes, Profa. Dra. Ana Lúcia Paschoa Botelho e Prof. Me. Rhadler Herculani. Corpo técnico administrativo: David Francisco. Discente: Jéssica Caroline Fukuda."
+        },
+        {
+            "pergunta": "Qual o contato da CPA?",
+            "resposta": "cpa@fatecbb.edu.br"
+        }
+    ]
+}

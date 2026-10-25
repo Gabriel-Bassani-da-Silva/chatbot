@@ -1,0 +1,200 @@
+{
+    "categoria": "curso_academico",
+    "titulo": "Grade Big Data no Agronegócio (Nova 2026)",
+    "fonte": "https://fatecbb.cps.sp.gov.br/grade-big-data-no-agronegocio-nova-2026/",
+    "resumo": "Nova matriz curricular do CST em Big Data no Agronegócio (Fatec Bebedouro – R-09), organizada por ano, com curricularização da extensão. Aplica-se à matriz nova de 2026; confirmar o ano de ingresso do estudante.",
+    "dados_estruturados": {
+        "1º Ano": {
+            "Projeto Integrador I": {
+                "carga_horária": "160 aulas"
+            },
+            "Algoritmos e Lógica de Programação": {
+                "carga_horária": "160 aulas"
+            },
+            "Matemática Aplicada à Computação": {
+                "carga_horária": "80 aulas"
+            },
+            "Fundamentos de Projetos e Dados": {
+                "carga_horária": "80 aulas"
+            },
+            "Produção Vegetal de Culturas": {
+                "carga_horária": "80 aulas"
+            },
+            "Sistemas Embarcados": {
+                "carga_horária": "80 aulas"
+            },
+            "Fundamentos de Leitura e Produção de Texto": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto On Line Assíncrono"
+            },
+            "Inglês I": {
+                "carga_horária": "80 aulas"
+            },
+            "Ética e Sustentabilidade": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto On Line Assíncrono"
+            }
+        },
+        "2º Ano": {
+            "Projeto Integrador II": {
+                "carga_horária": "80 aulas"
+            },
+            "Projeto Integrador II (turma remota)": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto On Line Assíncrono"
+            },
+            "Banco de Dados": {
+                "carga_horária": "160 aulas"
+            },
+            "Estatística Aplicada": {
+                "carga_horária": "80 aulas"
+            },
+            "Linguagem de Programação I": {
+                "carga_horária": "80 aulas"
+            },
+            "Web Semântica": {
+                "carga_horária": "80 aulas"
+            },
+            "Manejos Agrícolas": {
+                "carga_horária": "80 aulas"
+            },
+            "Internet das Coisas": {
+                "carga_horária": "80 aulas"
+            },
+            "Projetos de IoT": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto On Line Assíncrono"
+            },
+            "Inglês II": {
+                "carga_horária": "80 aulas"
+            },
+            "Redes de Computadores": {
+                "carga_horária": "80 aulas"
+            }
+        },
+        "3º Ano": {
+            "Projeto Integrador III": {
+                "carga_horária": "80 aulas"
+            },
+            "Projeto Integrador III (turma remota)": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto On Line Assíncrono"
+            },
+            "Gestão e Mineração de Dados": {
+                "carga_horária": "80 aulas"
+            },
+            "Arquitetura de APIs": {
+                "carga_horária": "160 aulas"
+            },
+            "Linguagem de Programação II": {
+                "carga_horária": "80 aulas"
+            },
+            "Inteligência Artificial": {
+                "carga_horária": "80 aulas"
+            },
+            "Laboratório de Big Data em Agricultura": {
+                "carga_horária": "80 aulas"
+            },
+            "Arquitetura Cloud": {
+                "carga_horária": "80 aulas"
+            },
+            "Aprendizagem de Máquina": {
+                "carga_horária": "80 aulas"
+            },
+            "Inglês III": {
+                "carga_horária": "80 aulas"
+            },
+            "Empreendedorismo e Inovação": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto On Line Assíncrono"
+            }
+        },
+        "Atividades externas à matriz": {
+            "Estágio": "240 horas (120 horas no 2º ano e 120 horas no 3º ano)",
+            "Trabalho de Graduação (TG)": "160 horas (3º ano)",
+            "Curricularização da Extensão": "360 horas destinadas à Atividade Curricular de Extensão"
+        },
+        "Carga semanal por ano": "24 aulas / 20 horas semanais; 960 aulas / 720 horas anuais",
+        "Distribuição das aulas por eixo formativo": {
+            "Básicas": {
+                "Matemática e Estatística": {
+                    "aulas": 160,
+                    "percentual": 5.6
+                },
+                "Comunicação em Língua Portuguesa": {
+                    "aulas": 80,
+                    "percentual": 2.8
+                },
+                "Comunicação em Língua Estrangeira": {
+                    "aulas": 240,
+                    "percentual": 8.3
+                },
+                "Administração e Economia": {
+                    "aulas": 160,
+                    "percentual": 5.6
+                },
+                "Total": {
+                    "aulas": 640,
+                    "percentual": 22.2
+                }
+            },
+            "Profissionais": {
+                "Projetos (Integrador, Acadêmico, etc)": {
+                    "aulas": 240,
+                    "percentual": 8.3
+                },
+                "Tecnológicas Específicas para o Curso": {
+                    "aulas": 1840,
+                    "percentual": 63.9
+                },
+                "Gestão": {
+                    "aulas": 80,
+                    "percentual": 2.8
+                },
+                "Multidisciplinar": {
+                    "aulas": 80,
+                    "percentual": 2.8
+                },
+                "Total": {
+                    "aulas": 2240,
+                    "percentual": 77.8
+                }
+            },
+            "Total geral": {
+                "aulas": 2880,
+                "horas": 2161,
+                "percentual": 100.0
+            }
+        },
+        "Resumo de carga horária": {
+            "Matriz curricular": "2161 horas (ou 2880 aulas de 45 minutos), sendo 360 horas de Atividade Curricular de Extensão",
+            "Trabalho de Graduação": "160 horas",
+            "Estágio": "240 horas",
+            "Total do curso": "2561 horas"
+        },
+        "Aplicabilidade da matriz": "Matriz nova de 2026. A versão anterior (até 2025) está em https://fatecbb.cps.sp.gov.br/grade-bigdata-2/. Confirmar o ano de ingresso do estudante antes de orientar qual matriz se aplica."
+    },
+    "fonte_detalhe_eixos": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/02/Matriz-Big-Data.pdf",
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Como é organizada a matriz nova de Big Data no Agronegócio (2026)?",
+            "resposta": "Por ano (1º, 2º e 3º ano), com 960 aulas (720 horas) por ano, curricularização da extensão, estágio e Trabalho de Graduação. Confirme o ano de ingresso para saber se a matriz se aplica a você."
+        },
+        {
+            "pergunta": "Qual a carga horária total da matriz nova de Big Data?",
+            "resposta": "A matriz tem 2161 horas (2880 aulas de 45 min), sendo 360 horas de extensão, mais 160 horas de TG e 240 horas de estágio, totalizando 2561 horas."
+        },
+        {
+            "pergunta": "Quais disciplinas tem o 1º ano da matriz nova de Big Data?",
+            "resposta": "Projeto Integrador I (160), Algoritmos e Lógica de Programação (160), Matemática Aplicada à Computação, Fundamentos de Projetos e Dados, Produção Vegetal de Culturas, Sistemas Embarcados, Inglês I (80 cada) e, em formato remoto, Fundamentos de Leitura e Produção de Texto e Ética e Sustentabilidade."
+        },
+        {
+            "pergunta": "Quando faço estágio e TG na matriz nova de Big Data?",
+            "resposta": "O estágio (240 horas) é de 120 horas no 2º ano e 120 horas no 3º ano. O Trabalho de Graduação (160 horas) é no 3º ano."
+        },
+        {
+            "pergunta": "O que significa a letra R nas disciplinas?",
+            "resposta": "R indica disciplina em modalidade Remoto On Line Assíncrono."
+        }
+    ]
+}

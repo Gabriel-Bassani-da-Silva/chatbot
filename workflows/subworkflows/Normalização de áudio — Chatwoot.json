@@ -1,0 +1,323 @@
+{
+  "name": "Normalização de áudio — Chatwoot",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "235c974b-73b5-43e3-8888-ce6714caa5e7",
+      "name": "Entrada — anexo de áudio",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/** Preflight: mede Ogg/Opus e WAV; outros codecs exigem duração declarada. Limites: 60 s e 10 MiB. */\nconst source = $json;\nconst attachmentItem = source.attachmentItem ?? {};\nconst MAX_AUDIO_SECONDS = 60;\nconst MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;\nfunction readDuration(value) {\n  if (typeof value === 'number' && Number.isFinite(value) && value >= 0) return value;\n  if (typeof value !== 'string' || !value.trim()) return null;\n  const raw = value.trim();\n  if (/^\\d+(?:\\.\\d+)?$/.test(raw)) return Number(raw);\n  const parts = raw.split(':').map(Number);\n  if (parts.length < 2 || parts.length > 3 || parts.some(part => !Number.isFinite(part) || part < 0)) return null;\n  return parts.reduce((total, part) => total * 60 + part, 0);\n}\nfunction parseOggOpus(buffer) {\n  if (buffer.length < 27 || buffer.toString('ascii', 0, 4) !== 'OggS') return null;\n  let offset = 0, maxGranule = null, preSkip = 0, found = false;\n  const unset = 0xffffffffffffffffn;\n  while (offset + 27 <= buffer.length) {\n    if (buffer.toString('ascii', offset, offset + 4) !== 'OggS' || buffer[offset + 4] !== 0) return null;\n    const count = buffer[offset + 26], table = offset + 27, payload = table + count;\n    if (payload > buffer.length) return null;\n    let length = 0;\n    for (let i = 0; i < count; i++) length += buffer[table + i];\n    const end = payload + length;\n    if (end > buffer.length) return null;\n    if (!found) {\n      const marker = buffer.indexOf('OpusHead', payload, 'ascii');\n      if (marker >= payload && marker + 12 <= end) { preSkip = buffer.readUInt16LE(marker + 10); found = true; }\n    }\n    const granule = buffer.readBigUInt64LE(offset + 6);\n    if (granule !== unset && (maxGranule === null || granule > maxGranule)) maxGranule = granule;\n    offset = end;\n  }\n  if (!found || maxGranule === null) return null;\n  const samples = Number(maxGranule) - preSkip;\n  return Number.isFinite(samples) && samples >= 0 ? samples / 48000 : null;\n}\nfunction parseWav(buffer) {\n  if (buffer.length < 44 || buffer.toString('ascii', 0, 4) !== 'RIFF' || buffer.toString('ascii', 8, 12) !== 'WAVE') return null;\n  let offset = 12, byteRate = 0, dataBytes = null;\n  while (offset + 8 <= buffer.length) {\n    const id = buffer.toString('ascii', offset, offset + 4), size = buffer.readUInt32LE(offset + 4), start = offset + 8;\n    const actual = Math.min(size, Math.max(0, buffer.length - start));\n    if (id === 'fmt ' && actual >= 16) byteRate = buffer.readUInt32LE(start + 8);\n    if (id === 'data') dataBytes = actual;\n    offset = start + size + (size % 2);\n    if (id === 'data' && byteRate > 0) break;\n  }\n  return byteRate > 0 && dataBytes !== null ? dataBytes / byteRate : null;\n}\nlet buffer;\ntry { buffer = await this.helpers.getBinaryDataBuffer(0, 'data'); }\ncatch {\n  const result = { ...source, attachmentStatus: 'pending', attachmentText: '', normalizationPendingStep: 'audio_binary_unavailable' };\n  return typeof $binary !== 'undefined' && $binary ? { json: result, binary: $binary } : { json: result };\n}\nconst bytes = Number(buffer?.length ?? 0);\nlet duration = parseOggOpus(buffer) ?? parseWav(buffer);\nif (duration === null) duration = readDuration(attachmentItem.durationSeconds);\nlet status = 'readyForTranscription', step = '';\nif (!bytes) { status = 'failed'; step = 'audio_file_empty'; }\nelse if (bytes > MAX_ATTACHMENT_BYTES) { status = 'unsupported'; step = 'attachment_exceeds_10mb_limit'; }\nelse if (duration === null || !Number.isFinite(duration)) { status = 'pending'; step = 'audio_duration_unavailable'; }\nelse if (duration <= 0) { status = 'pending'; step = 'audio_duration_invalid'; }\nelse if (duration > MAX_AUDIO_SECONDS) { status = 'unsupported'; step = 'audio_over_60_seconds'; }\nconst updatedAttachment = { ...attachmentItem, sizeBytes: bytes, durationSeconds: duration };\nconst result = { ...source, attachmentItem: updatedAttachment, attachmentStatus: status, attachmentText: '', normalizationPendingStep: step };\nreturn typeof $binary !== 'undefined' && $binary ? { json: result, binary: $binary } : { json: result };"
+      },
+      "id": "4d9d48e4-788b-4309-b6c7-2bd2371e37c2",
+      "name": "Validar duração e tamanho",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.attachmentStatus }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "readyForTranscription"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              }
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.attachmentStatus }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "pending"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              }
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.attachmentStatus }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "unsupported"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Outro"
+        }
+      },
+      "id": "f07723a7-7a22-46ab-94e5-cbe2ac888234",
+      "name": "Encaminhar áudio — transcrever ou retornar status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://speaches:8000/v1/audio/transcriptions",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "Systran/faster-whisper-small"
+            },
+            {
+              "name": "language",
+              "value": "pt"
+            },
+            {
+              "name": "prompt",
+              "value": "Transcrição fiel de uma mensagem de voz em português do Brasil, com palavras e letras soletradas."
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "id": "504c21d9-9560-47cd-ad15-8c843fefe445",
+      "name": "Transcrever áudio — Speaches",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        960,
+        192
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/** Combina a transcrição ao contexto do anexo sem perder a legenda original. */\nconst source = $('Validar duração e tamanho').item.json;\nconst candidates = [$json.text, $json.transcription, $json.transcript, $json.output];\nconst text = String(candidates.find(value => typeof value === 'string' && value.trim()) ?? '').trim();\nreturn { json: { ...source, attachmentText: text, attachmentStatus: text ? 'ready' : 'failed', normalizationPendingStep: text ? '' : 'audio_transcription_empty' } };"
+      },
+      "id": "425c90ac-7a2a-4868-a17a-54cd79a0658b",
+      "name": "Preparar saída — transcrição e legenda",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/** Oculta erros técnicos e devolve somente um estado interno seguro. */\nconst source = $('Validar duração e tamanho').item.json;\nreturn { json: { ...source, attachmentText: '', attachmentStatus: 'failed', normalizationPendingStep: 'audio_transcription_failed_or_timeout' } };"
+      },
+      "id": "380dd801-e979-4fa9-86c6-b9139be9d466",
+      "name": "Retornar status seguro — falha na transcrição",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/** Mantém o motivo da pendência e permite que a conversa siga. */\nreturn { json: { ...$json, attachmentText: '', attachmentStatus: 'pending' } };"
+      },
+      "id": "1b648dc9-2809-47bf-95ea-34f288dddb74",
+      "name": "Retornar status — áudio não validável",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "/** Marca áudio inelegível sem expor detalhes técnicos ao agente. */\nreturn { json: { ...$json, attachmentText: '', attachmentStatus: 'unsupported', normalizationPendingStep: $json.normalizationPendingStep || 'audio_not_eligible_for_transcription' } };"
+      },
+      "id": "269e3ef7-f2e9-4c3d-a56d-467e986fc580",
+      "name": "Retornar status — áudio acima dos limites",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ÁUDIO — TRANSCRIÇÃO LOCAL\nPreflight até 60 s e 10 MiB; Speaches/Whisper small; timeout controlado; falhas retornam status seguro ao fluxo pai.",
+        "height": 140,
+        "width": 1260,
+        "color": 5
+      },
+      "id": "793c36f9-e17d-420f-bf35-ce10e435c2b7",
+      "name": "Etiqueta — áudio local",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entrada — anexo de áudio": {
+      "main": [
+        [
+          {
+            "node": "Validar duração e tamanho",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar duração e tamanho": {
+      "main": [
+        [
+          {
+            "node": "Encaminhar áudio — transcrever ou retornar status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encaminhar áudio — transcrever ou retornar status": {
+      "main": [
+        [
+          {
+            "node": "Transcrever áudio — Speaches",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retornar status — áudio não validável",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retornar status — áudio acima dos limites",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retornar status — áudio acima dos limites",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcrever áudio — Speaches": {
+      "main": [
+        [
+          {
+            "node": "Preparar saída — transcrição e legenda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retornar status seguro — falha na transcrição",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "cc61d500-4099-4685-ae05-20d38a1ea5be",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "b8307148f7a3f12364a5af731a5259298a076a8b600eb47f1ee91081801822bf"
+  },
+  "nodeGroups": [],
+  "id": "RDtQNcfjRfXGKHZq",
+  "tags": []
+}

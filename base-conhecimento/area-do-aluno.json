@@ -1,0 +1,55 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Área do Aluno",
+    "fonte": "https://fatecbb.cps.sp.gov.br/area-do-aluno/",
+    "resumo": "Informações e recursos para os alunos da Fatec Bebedouro",
+    "dados_estruturados": {
+        "institucional": {
+            "resetar_senha": "https://forms.gle/HtVm9LUwwNhFfrhh8",
+            "tutorial_de_solicitacao_de_documentos": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/05/SOLICITACAODOCUMENTOSACADICOS.pdf"
+        },
+        "siga": {
+            "login": "https://siga.cps.sp.gov.br/sigaaluno/applogin.aspx"
+        },
+        "email_institucional": "https://outlook.office365.com/owa/",
+        "teams": "https://teams.microsoft.com/v2",
+        "microsoft_store": "https://azureforeducation.microsoft.com/devtools",
+        "office_365": {
+            "word": "https://www.office.com/launch/word",
+            "excel": "https://www.office.com/launch/excel",
+            "power_point": "https://www.office.com/launch/powerpoint",
+            "one_note": "https://www.onenote.com/?public=1&wdorigin=ondcauth2&wdorigin=ondc",
+            "one_drive": "https://www.microsoft.com/pt-br/microsoft-365/onedrive/online-cloud-storage"
+        }
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Como faço para resetar minha senha?",
+            "resposta": "Use o formulário oficial da Fatec Bebedouro: https://forms.gle/HtVm9LUwwNhFfrhh8"
+        },
+        {
+            "pergunta": "Como solicito documentos acadêmicos (declarações, histórico etc.)?",
+            "resposta": "A solicitação é feita pelo SIGA. O tutorial passo a passo está em: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/05/SOLICITACAODOCUMENTOSACADICOS.pdf"
+        },
+        {
+            "pergunta": "Onde acesso o SIGA como aluno?",
+            "resposta": "Acesse o login do SIGA Aluno em: https://siga.cps.sp.gov.br/sigaaluno/applogin.aspx"
+        },
+        {
+            "pergunta": "Como acesso meu e-mail institucional?",
+            "resposta": "O e-mail institucional é acessado pelo Outlook: https://outlook.office365.com/owa/"
+        },
+        {
+            "pergunta": "Como acesso o Microsoft Teams?",
+            "resposta": "Acesse em: https://teams.microsoft.com/v2"
+        },
+        {
+            "pergunta": "Onde consigo programas e licenças da Microsoft para estudantes?",
+            "resposta": "Pelo Microsoft Store / Azure for Education: https://azureforeducation.microsoft.com/devtools"
+        },
+        {
+            "pergunta": "Como acesso Word, Excel, PowerPoint, OneNote e OneDrive?",
+            "resposta": "Word: https://www.office.com/launch/word. Excel: https://www.office.com/launch/excel. PowerPoint: https://www.office.com/launch/powerpoint. OneNote: https://www.onenote.com/?public=1&wdorigin=ondcauth2&wdorigin=ondc. OneDrive: https://www.microsoft.com/pt-br/microsoft-365/onedrive/online-cloud-storage"
+        }
+    ]
+}

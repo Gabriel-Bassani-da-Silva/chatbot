@@ -1,0 +1,142 @@
+{
+    "categoria": "curso_academico",
+    "titulo": "Grade Big Data no Agronegócio (Até 2025)",
+    "fonte": "https://fatecbb.cps.sp.gov.br/grade-bigdata-2/",
+    "resumo": "Matriz curricular de Big Data no Agronegócio válida para a versão indicada até 2025, com disciplinas por semestre, cargas e distribuição das aulas por eixo formativo.",
+    "dados_estruturados": {
+        "1º Semestre": {
+            "Projeto Integrador de Programação": "4",
+            "Lógica de Programação": "4",
+            "Introdução a Big Data": "2",
+            "Produção Vegetal de Culturas Anuais": "2",
+            "Sociedade, Tecnologia e Inovação": "2",
+            "Ética e Valores": "2",
+            "Matemática discreta": "4",
+            "Fundamentos de leitura e produção de textos": "2",
+            "Inglês I": "2"
+        },
+        "2º Semestre": {
+            "Projeto Integrador de Internet das Coisas I": "4",
+            "Internet das Coisas": "4",
+            "Java I - Orientação ao Objeto": "4",
+            "Produção vegetal de Culturas perenes e green houses": "2",
+            "Cálculo": "4",
+            "Fundamentos de Gestão de projetos": "2",
+            "Fundamentos de Administração geral": "2",
+            "Inglês II": "2"
+        },
+        "3º Semestre": {
+            "Projeto Integrador de Internet das coisas II": "4",
+            "Bancos de Dados": "4",
+            "Java II - Sistemas Web": "4",
+            "Programação Front End": "4",
+            "Manejo agrícolas de Solo e semeadura": "4",
+            "Estatística": "4",
+            "Geometria analítica": "2",
+            "Inglês III": "2"
+        },
+        "4º Semestre": {
+            "Projeto integrador de Redes e Infra": "4",
+            "Redes de computadores": "4",
+            "Web Semântica": "4",
+            "Algoritmos Avançados": "6",
+            "Manejo Agrícolas de Tratos culturais e colheita": "2",
+            "Empreendedorismo": "2",
+            "Inglês IV": "2"
+        },
+        "5º Semestre": {
+            "Projeto Integrador de arquiteturas cloud": "4",
+            "Banco de Dados NoSQL": "4",
+            "Gestão de Dados": "2",
+            "Introdução ao Data Mining": "2",
+            "Arquiteturas Cloud": "4",
+            "Projeto de Internet das Coisas": "4",
+            "Monitoramento de pragas e doenças": "2",
+            "Inglês V": "2"
+        },
+        "6º Semestre": {
+            "Projeto Integrador de Big Data": "4",
+            "Arquitetura de APIs": "6",
+            "Inteligência Artificial": "4",
+            "Aprendizado de máquina": "4",
+            "Laboratório de Big Data em Agricultura": "4",
+            "Inglês VI": "2"
+        },
+        "Distribuição das aulas por eixo formativo": {
+            "Disciplinas básicas": {
+                "Transversal": {
+                    "aulas": 80,
+                    "percentual": 2.8
+                },
+                "Núcleo de Gestão": {
+                    "aulas": 120,
+                    "percentual": 4.2
+                },
+                "Língua Portuguesa": {
+                    "aulas": 40,
+                    "percentual": 1.4
+                },
+                "Comunicação em Língua Estrangeira: Inglês": {
+                    "aulas": 240,
+                    "percentual": 8.3
+                },
+                "Exatas": {
+                    "aulas": 280,
+                    "percentual": 9.7
+                },
+                "Total": {
+                    "aulas": 760,
+                    "percentual": 26.4
+                }
+            },
+            "Disciplinas profissionais": {
+                "Temáticas (Agricultura)": {
+                    "aulas": 280,
+                    "percentual": 9.7
+                },
+                "Específicas da Tecnologia do Curso": {
+                    "aulas": 1840,
+                    "percentual": 63.9
+                },
+                "Total": {
+                    "aulas": 2120,
+                    "percentual": 73.6
+                }
+            },
+            "Total geral": {
+                "aulas": 2880,
+                "percentual": 100.0
+            }
+        },
+        "Aplicabilidade da matriz": "Usar somente para a turma correspondente a esta versão da matriz. Confirmar o ano de ingresso do estudante antes de orientar qual matriz se aplica."
+    },
+    "Informações Adicionais": {
+        "Estágio Curricular": "240 horas",
+        "Trabalho de Graduação": "160 horas",
+        "Total de Aulas": "2880 aulas -> 2400 horas",
+        "Total Geral do Curso": "2800 horas"
+    },
+    "fonte_detalhe_eixos": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/04/gradebigdata2025-67ef15b82cdb7-scaled.jpg",
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Para quem vale a matriz de Big Data no Agronegócio até 2025?",
+            "resposta": "Para as turmas dessa versão (ingresso até 2025). Confirme o ano de ingresso. A matriz nova de 2026 está em https://fatecbb.cps.sp.gov.br/grade-big-data-no-agronegocio-nova-2026/"
+        },
+        {
+            "pergunta": "Quais disciplinas tem o 1º semestre de Big Data (matriz até 2025)?",
+            "resposta": "Projeto Integrador de Programação (4), Lógica de Programação (4), Introdução a Big Data (2), Produção Vegetal de Culturas Anuais (2), Sociedade, Tecnologia e Inovação (2), Ética e Valores (2), Matemática Discreta (4), Fundamentos de Leitura e Produção de Textos (2) e Inglês I (2). Os números são aulas semanais."
+        },
+        {
+            "pergunta": "Qual a carga horária do curso de Big Data (matriz até 2025)?",
+            "resposta": "2880 aulas (2400 horas), mais 240 horas de estágio e 160 horas de Trabalho de Graduação, totalizando 2800 horas."
+        },
+        {
+            "pergunta": "Quais disciplinas de IA e Machine Learning o curso tem?",
+            "resposta": "No 6º semestre: Inteligência Artificial (4) e Aprendizado de Máquina (4), além de Arquitetura de APIs (6) e Laboratório de Big Data em Agricultura (4)."
+        },
+        {
+            "pergunta": "O curso tem disciplinas de agricultura?",
+            "resposta": "Sim: Produção Vegetal de Culturas Anuais, Produção Vegetal de Culturas Perenes e Green Houses, Manejo Agrícola de Solo e Semeadura, Manejo Agrícola de Tratos Culturais e Colheita, Monitoramento de Pragas e Doenças e Laboratório de Big Data em Agricultura."
+        }
+    ]
+}

@@ -1,0 +1,275 @@
+{
+    "categoria": "curso_academico",
+    "titulo": "Grade Logística",
+    "fonte": "https://fatecbb.cps.sp.gov.br/grade-logistica/",
+    "resumo": "Matriz curricular de Logística com disciplinas por semestre, modalidade, cargas e distribuição das aulas por eixo formativo. A aplicabilidade deve ser confirmada pelo ano de ingresso do estudante.",
+    "dados_estruturados": {
+        "1º Semestre": {
+            "Projeto Interdisciplinar I": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto"
+            },
+            "Logística Empresarial": {
+                "carga_horária": "80 aulas"
+            },
+            "Informática Aplicada à Logística": {
+                "carga_horária": "80 aulas"
+            },
+            "Métodos para Produção do Conhecimento": {
+                "carga_horária": "40 aulas"
+            },
+            "Fundamentos de Administração": {
+                "carga_horária": "40 aulas"
+            },
+            "Matemática Aplicada": {
+                "carga_horária": "80 aulas"
+            },
+            "Fundamentos de Comunicação e Expressão": {
+                "carga_horária": "40 aulas"
+            },
+            "Inglês para Logística I": {
+                "carga_horária": "40 aulas"
+            }
+        },
+        "2º Semestre": {
+            "Projeto Interdisciplinar II": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto"
+            },
+            "Modalidade e Intermodalidade": {
+                "carga_horária": "80 aulas"
+            },
+            "Logística Verde": {
+                "carga_horária": "40 aulas"
+            },
+            "Gestão de Equipes": {
+                "carga_horária": "40 aulas"
+            },
+            "Estatística Aplicada à Gestão": {
+                "carga_horária": "80 aulas"
+            },
+            "Matemática Financeira": {
+                "carga_horária": "40 aulas"
+            },
+            "Contabilidade Gerencial": {
+                "carga_horária": "40 aulas"
+            },
+            "Espanhol I": {
+                "carga_horária": "40 aulas"
+            },
+            "Inglês para Logística II": {
+                "carga_horária": "40 aulas"
+            }
+        },
+        "3º Semestre": {
+            "Projeto Interdisciplinar III": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto"
+            },
+            "Pesquisa Operacional": {
+                "carga_horária": "80 aulas"
+            },
+            "Administração de Materiais": {
+                "carga_horária": "80 aulas"
+            },
+            "Economia e Finanças": {
+                "carga_horária": "80 aulas"
+            },
+            "Gestão Tributária nas Operações Logísticas": {
+                "carga_horária": "40 aulas"
+            },
+            "Fundamentos da Gestão da Qualidade": {
+                "carga_horária": "40 aulas"
+            },
+            "Espanhol II": {
+                "carga_horária": "40 aulas"
+            },
+            "Inglês para Logística III": {
+                "carga_horária": "40 aulas"
+            }
+        },
+        "4º Semestre": {
+            "Projeto Interdisciplinar IV": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto"
+            },
+            "Gestão da Produção e Operações": {
+                "carga_horária": "80 aulas"
+            },
+            "Métodos Quantitativos de Gestão": {
+                "carga_horária": "80 aulas"
+            },
+            "Sistemas de Movimentação e Transporte": {
+                "carga_horária": "40 aulas"
+            },
+            "Gestão de Projetos Logísticos": {
+                "carga_horária": "40 aulas"
+            },
+            "Embalagens e Unitização": {
+                "carga_horária": "40 aulas"
+            },
+            "Fundamentos de Marketing": {
+                "carga_horária": "40 aulas"
+            },
+            "Logística de Abastecimento Aplicada ao Agronegócio": {
+                "carga_horária": "40 aulas"
+            },
+            "Inglês para Logística IV": {
+                "carga_horária": "40 aulas"
+            }
+        },
+        "5º Semestre": {
+            "Projeto Interdisciplinar V": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto"
+            },
+            "Gestão da Cadeia de Suprimentos": {
+                "carga_horária": "80 aulas"
+            },
+            "Simulação em Logística": {
+                "carga_horária": "80 aulas"
+            },
+            "Custos e Tarifas Logísticas": {
+                "carga_horária": "80 aulas"
+            },
+            "Movimentação e Armazenagem": {
+                "carga_horária": "80 aulas"
+            },
+            "Logística Distributiva Aplicada ao Agronegócio": {
+                "carga_horária": "40 aulas"
+            },
+            "Análise de Viabilidade Projetos Logísticos": {
+                "carga_horária": "40 aulas"
+            }
+        },
+        "6º Semestre": {
+            "Projeto Interdisciplinar VI": {
+                "carga_horária": "80 aulas",
+                "modalidade": "Remoto"
+            },
+            "Gestão de Transporte de Carga e Roteirização": {
+                "carga_horária": "80 aulas"
+            },
+            "Comércio Exterior e Logística": {
+                "carga_horária": "80 aulas"
+            },
+            "Logística Digital": {
+                "carga_horária": "40 aulas"
+            },
+            "Transporte de Cargas Especiais e Perigosas": {
+                "carga_horária": "40 aulas"
+            },
+            "Tecnologia de Transportes": {
+                "carga_horária": "40 aulas"
+            },
+            "Inovação e Empreendedorismo": {
+                "carga_horária": "40 aulas"
+            },
+            "Tópicos Avançados em Logística": {
+                "carga_horária": "40 aulas"
+            },
+            "Consultoria e Tomada de Decisão em Logística": {
+                "carga_horária": "40 aulas"
+            }
+        },
+        "Distribuição das aulas por eixo formativo": {
+            "Básicas": {
+                "Matemática e Estatística": {
+                    "aulas": 200,
+                    "percentual": 6.9
+                },
+                "Metodologias de Pesquisa": {
+                    "aulas": 40,
+                    "percentual": 1.4
+                },
+                "Administração e Economia": {
+                    "aulas": 40,
+                    "percentual": 1.4
+                },
+                "Total": {
+                    "aulas": 280,
+                    "percentual": 9.7
+                }
+            },
+            "Profissionais": {
+                "Projetos (Integrador, Acadêmico etc.)": {
+                    "aulas": 480,
+                    "percentual": 16.7
+                },
+                "Tecnológicas Específicas para o Curso": {
+                    "aulas": 1480,
+                    "percentual": 51.4
+                },
+                "Tecnológicas Gerais": {
+                    "aulas": 120,
+                    "percentual": 4.2
+                },
+                "Escolha da Unidade": {
+                    "aulas": 240,
+                    "percentual": 8.3
+                },
+                "Total": {
+                    "aulas": 2320,
+                    "percentual": 80.6
+                }
+            },
+            "Línguas e Multidisciplinares": {
+                "Comunicação em Língua Portuguesa": {
+                    "aulas": 40,
+                    "percentual": 1.4
+                },
+                "Comunicação em Língua Estrangeira": {
+                    "aulas": 240,
+                    "percentual": 8.3
+                },
+                "Total": {
+                    "aulas": 280,
+                    "percentual": 9.7
+                }
+            },
+            "Total geral": {
+                "aulas": 2880,
+                "percentual": 100.0,
+                "horas": 2400
+            }
+        },
+        "Aplicabilidade da matriz": "A matriz aplicável depende do ano de ingresso do estudante. Confirmar a turma de ingresso antes de responder; não presumir que outra versão substitui automaticamente a matriz da turma."
+    },
+    "estagio": {
+        "carga_horária": "240 Horas"
+    },
+    "total_de_aulas": {
+        "carga_horária": "2880 Aulas (2400 Horas)"
+    },
+    "fonte_detalhe_eixos": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/04/Grade-Logistica_page-0001-scaled.jpg",
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Quais disciplinas tem o 1º semestre de Logística?",
+            "resposta": "Projeto Interdisciplinar I (80 aulas, remoto), Logística Empresarial, Informática Aplicada à Logística, Matemática Aplicada (80 aulas cada), Métodos para Produção do Conhecimento, Fundamentos de Administração, Fundamentos de Comunicação e Expressão e Inglês para Logística I (40 aulas cada)."
+        },
+        {
+            "pergunta": "Qual a carga horária total do curso de Logística?",
+            "resposta": "2880 aulas, equivalentes a 2400 horas, mais 240 horas de estágio."
+        },
+        {
+            "pergunta": "O Projeto Interdisciplinar de Logística é presencial?",
+            "resposta": "Não. Os Projetos Interdisciplinares (I a VI), de 80 aulas cada, são em modalidade remota."
+        },
+        {
+            "pergunta": "Logística tem Espanhol?",
+            "resposta": "Sim, Espanhol I (2º semestre) e Espanhol II (3º semestre), de 40 aulas cada."
+        },
+        {
+            "pergunta": "Quais disciplinas tem o 6º semestre de Logística?",
+            "resposta": "Projeto Interdisciplinar VI (remoto), Gestão de Transporte de Carga e Roteirização, Comércio Exterior e Logística (80 aulas cada), Logística Digital, Transporte de Cargas Especiais e Perigosas, Tecnologia de Transportes, Inovação e Empreendedorismo, Tópicos Avançados em Logística e Consultoria e Tomada de Decisão em Logística (40 aulas cada)."
+        },
+        {
+            "pergunta": "Em qual semestre estudo logística aplicada ao agronegócio?",
+            "resposta": "Logística de Abastecimento Aplicada ao Agronegócio no 4º semestre e Logística Distributiva Aplicada ao Agronegócio no 5º semestre (40 aulas cada)."
+        },
+        {
+            "pergunta": "Qual matriz vale para mim?",
+            "resposta": "Depende do ano de ingresso. Confirme sua turma antes de definir a matriz aplicável."
+        }
+    ]
+}

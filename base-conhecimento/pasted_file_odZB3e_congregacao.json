@@ -1,0 +1,51 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Congregação",
+    "fonte": "https://fatecbb.cps.sp.gov.br/congregacao/",
+    "resumo": "A Congregação é o órgão colegiado de supervisão das atividades acadêmico-administrativas, do ensino, da pesquisa e da extensão de serviços à comunidade.",
+    "dados_estruturados": {
+        "Diretora da Faculdade": "Profa. Dra. Carla Regina Lanzotti",
+        "Coordenadora do Curso Superior de Tecnologia em Logística": "Profa. Dra. Selma de Fátima Grossi",
+        "Coordenador do Curso Superior de Tecnologia em Big Data no Agronegócio": "Prof. Dr. Renan Guilherme Nespolo",
+        "Docente de Ensino Superior Referência III:": {
+            "Logística": "Prof. Me. Luis Roberto Medeiros",
+            "Big Data no Agronegócio": "Prof. Dr. Fábio Alexandre Cavichioli"
+        },
+        "Docente de Ensino Superior Referência II:": {
+            "Logística": "Prof. Me. Oswaldo Lázaro Mendes"
+        },
+        "Docente de Ensino Superior Referência I:": {
+            "Logística": [
+                "Profa. Me. Eliamar Francelino do Prado",
+                "Profa. Dra. Mariana Moretto Gementi-Spolzino"
+            ]
+        },
+        "Servidores Técnico-Administrativos:": {
+            "Titular": "Cássio Junqueira Franco Fabbri",
+            "Suplente": "Elaine Bento de Albuquerque"
+        },
+        "Representante do Corpo Discente:": {
+            "Titular": "Eli Carlos Pereira",
+            "Suplente": "Paulo Sergio Calor"
+        },
+        "Representante da Comunidade Externa": "Bóris Alessandro Wiazowski"
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "O que é a Congregação?",
+            "resposta": "É o órgão colegiado de supervisão das atividades acadêmico-administrativas, do ensino, da pesquisa e da extensão de serviços à comunidade."
+        },
+        {
+            "pergunta": "Quem é o coordenador de Big Data no Agronegócio?",
+            "resposta": "Prof. Dr. Renan Guilherme Nespolo."
+        },
+        {
+            "pergunta": "Quem é a coordenadora de Logística?",
+            "resposta": "Profa. Dra. Selma de Fátima Grossi."
+        },
+        {
+            "pergunta": "Quem compõe a Congregação?",
+            "resposta": "Diretora: Profa. Dra. Carla Regina Lanzotti. Coordenadores: Profa. Dra. Selma de Fátima Grossi (Logística) e Prof. Dr. Renan Guilherme Nespolo (Big Data). Docentes: Prof. Me. Luis Roberto Medeiros e Prof. Dr. Fábio Alexandre Cavichioli (Ref. III), Prof. Me. Oswaldo Lázaro Mendes (Ref. II), Profa. Me. Eliamar Francelino do Prado e Profa. Dra. Mariana Moretto Gementi-Spolzino (Ref. I). Técnico-administrativos: Cássio Junqueira Franco Fabbri (titular) e Elaine Bento de Albuquerque (suplente). Discentes: Eli Carlos Pereira (titular) e Paulo Sergio Calor (suplente). Comunidade externa: Bóris Alessandro Wiazowski."
+        }
+    ]
+}

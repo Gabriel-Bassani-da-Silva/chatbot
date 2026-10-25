@@ -1,0 +1,89 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Logística",
+    "fonte": "https://fatecbb.cps.sp.gov.br/logistica-3/",
+    "resumo": "A logística é a área da gestão responsável por prover recursos, equipamentos e informações para a execução de todas as atividades de uma empresa.",
+    "dados_estruturados": {
+        "Área do aluno": {
+            "TCC": "https://fatecbb.cps.sp.gov.br/tcc-logistica-2/",
+            "Estágio": "https://fatecbb.cps.sp.gov.br/estagio-logistica/"
+        },
+        "PRAZOS IMPORTANTES": {
+            "Prazo Final para Entrega das 3 cópias do TCC": "19 de novembro de 2026",
+            "Prazo Máximo de Entrega dos Documentos de Estágio": "27 de novembro de 2026",
+            "Entrega do Anteprojeto do Trabalho de Conclusão de Curso": "23 de novembro de 2026",
+            "Período de Apresentação do Trabalho de Conclusão de Curso": "De 22 a 26 de dezembro de 2026"
+        },
+        "CURSO SUPERIOR DE TECNOLOGIA EM LOGÍSTICA": {
+            "Duração": "6 semestres",
+            "Vagas": "40 (por semestre)",
+            "Grau": "Tecnológico",
+            "Modalidade": "Presencial",
+            "Grade": "https://fatecbb.cps.sp.gov.br/grade-logistica/"
+        },
+        "O que o aluno de Logística estuda?": {
+            "Determinar custos como fretes e tributos": "",
+            "Planejar rotas de transporte e entrega de mercadorias de maneira eficiente": "",
+            "Fazer a gestão de estoques": "",
+            "Planejar embalagens de produtos que facilitem o armazenamento e a distribuição": "",
+            "Explorar softwares de simulação de cargas e roteiros": ""
+        },
+        "O que o profissional de Logística faz?": {
+            "Gerencia o fluxo de produtos ou pessoas em uma empresa": "",
+            "Cuida da aquisição, do recebimento, da armazenagem, da distribuição e do transporte de produtos": "",
+            "Define a quantidade e o tipo dos veículos necessários às entregas": "",
+            "Planeja a organização e a ordem dos produtos em caminhões ou containers": "",
+            "Determina o roteiro de entrega de produtos": "",
+            "Planeja a melhor localização estratégica para estabelecer estoques": "",
+            "Pode atuar na ordenação do fluxo de atendimento ao público em hospitais e postos de serviço": ""
+        },
+        "Onde o profissional de Logística pode trabalhar?": {
+            "Indústrias": "",
+            "Supermercados": "",
+            "Lojas": "",
+            "Hospitais": "",
+            "Órgãos públicos de mobilidade urbana": "",
+            "Empresas especializadas (operadores logísticos)": "",
+            "Empresas de transportes": "",
+            "Empresas de comércio eletrônico": ""
+        }
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Quanto tempo dura o curso de Logística?",
+            "resposta": "O curso dura 6 semestres."
+        },
+        {
+            "pergunta": "Quantas vagas o curso de Logística oferece?",
+            "resposta": "São 40 vagas por semestre."
+        },
+        {
+            "pergunta": "O curso de Logística é presencial?",
+            "resposta": "Sim, a modalidade é presencial e o grau é tecnológico."
+        },
+        {
+            "pergunta": "O que o aluno de Logística estuda?",
+            "resposta": "Determinar custos como fretes e tributos, planejar rotas de transporte e entrega de mercadorias de forma eficiente, fazer a gestão de estoques, planejar embalagens que facilitem armazenamento e distribuição e explorar softwares de simulação de cargas e roteiros."
+        },
+        {
+            "pergunta": "O que faz o profissional de Logística?",
+            "resposta": "Gerencia o fluxo de produtos ou pessoas em uma empresa; cuida da aquisição, recebimento, armazenagem, distribuição e transporte de produtos; define a quantidade e o tipo de veículos para entregas; planeja a organização dos produtos em caminhões ou containers; determina roteiros de entrega; e planeja a localização estratégica de estoques."
+        },
+        {
+            "pergunta": "Onde o profissional de Logística pode trabalhar?",
+            "resposta": "Em indústrias, supermercados, lojas, hospitais, órgãos públicos de mobilidade urbana, operadores logísticos, empresas de transportes e empresas de comércio eletrônico."
+        },
+        {
+            "pergunta": "Quais são os prazos importantes de 2026 do curso de Logística?",
+            "resposta": "Entrega das 3 cópias do TCC: até 19 de novembro de 2026. Entrega do anteprojeto do TCC: 23 de novembro de 2026. Entrega dos documentos de estágio: até 27 de novembro de 2026. Apresentação do TCC: de 22 a 26 de dezembro de 2026."
+        },
+        {
+            "pergunta": "Onde vejo a grade curricular de Logística?",
+            "resposta": "https://fatecbb.cps.sp.gov.br/grade-logistica/"
+        },
+        {
+            "pergunta": "Onde encontro informações de TCC e estágio de Logística?",
+            "resposta": "TCC: https://fatecbb.cps.sp.gov.br/tcc-logistica-2/. Estágio: https://fatecbb.cps.sp.gov.br/estagio-logistica/"
+        }
+    ]
+}

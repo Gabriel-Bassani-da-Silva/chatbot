@@ -1,0 +1,143 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Estágio Logística",
+    "fonte": "https://fatecbb.cps.sp.gov.br/estagio-logistica/",
+    "resumo": "O objetivo do Estágio curricular obrigatório é o de incentivar o estudante no exercício e na análise das práticas nos diversos tipos de organizações.",
+    "dados_estruturados": {
+        "Dúvidas frequentes": {
+            "O que é estágio curricular supervisionado?": {
+                "definição": "Estágio é ato educativo escolar supervisionado, desenvolvido no ambiente de trabalho, que visa à preparação para o trabalho produtivo de educandos que estejam frequentando o ensino regular em instituições de educação superior, de educação profissional, de ensino médio, da educação especial e dos anos finais do ensino fundamental, na modalidade profissional da educação de jovens e adultos.",
+                "lei": "Lei de estágio (art. 1º)"
+            },
+            "Quais as formas possíveis de estágio na Fatec?": {
+                "estágio obrigatório": "estágio estipulado no projeto do curso, cuja carga horária é essencial para a aprovação e obtenção do diploma",
+                "estágio não-obrigatório": "estágio desenvolvido como atividade opcional, acrescida à carga horária regular e obrigatória"
+            },
+            "A partir de qual semestre o estágio é obrigatório?": {
+                "semestre": "terceiro semestre do curso"
+            },
+            "Qual a duração máxima de um estágio?": {
+                "duração": "2 anos"
+            },
+            "O que é a convalidação de estágio?": {
+                "convalidação": "aproveitamento de estágio ou equivalência de estágio, referente aos casos em que o aluno exerce emprego com registro em Carteira Profissional ou casos de trabalho autônomo ou de prestação de serviços devidamente regularizado junto aos órgãos competentes"
+            }
+        },
+        "Documentos iniciais": {
+            "Termo de Compromisso de Estágio": {
+                "preenchimento": "eletronicamente",
+                "entrega": "3 vias impressas"
+            },
+            "Plano de Atividades de Estágio": {
+                "preenchimento": "eletronicamente",
+                "entrega": "3 vias impressas"
+            },
+            "aplicabilidade": "Somente para quem vai iniciar e realizar estágio efetivo; a própria página exclui os casos de convalidação desta documentação inicial.",
+            "observacao_inicio": "As atividades de estágio só poderão ser iniciadas após a entrega de todos os documentos assinados pelas três partes (Fatec, Empresa e Aluno), em 3 vias impressas, na secretaria acadêmica; junto, cópia do seguro contra acidentes pessoais (1 via impressa)."
+        },
+        "Apólice de seguro": {
+            "concedente": "obrigada a fazer o Seguro de Acidentes Pessoais ocorridos nos locais de estágio",
+            "apólice": "obtida junto à seguradora ou prestadora de serviços",
+            "aplicabilidade": "Exigência do início de estágio efetivo; não é documento para iniciar um pedido de convalidação."
+        },
+        "Documentos de convalidação": {
+            "convalidação de estágio": {
+                "aluno funcionário de empresa do mesmo segmento do curso": {
+                    "solicitação": "Solicitação de Equivalência de Estágio Supervisionado",
+                    "documentos": "Cópia da carteira de trabalho digital, Documento timbrado da empresa com a descrição pormenorizada das atividades exercidas",
+                    "Declaração de horas estagiadas (Anexo 8)": "Declaração com a data de admissão e descrição pormenorizada das atividades efetivamente exercidas, em papel timbrado, com firma reconhecida e carimbo contendo CNPJ e razão social da empresa (Anexo 8 — Declaração de Horas Estagiadas)."
+                },
+                "aluno prestador de serviços (microempreendedor individual)": {
+                    "solicitação": "Solicitação de Equivalência de Estágio Supervisionado",
+                    "documentos": "Comprovante de inscrição e situação cadastral, Documento timbrado da empresa tomadora de serviço com a descrição pormenorizada das atividades exercidas",
+                    "Declaração de horas estagiadas (Anexo 8)": "Documento em papel timbrado da empresa tomadora do serviço, com descrição pormenorizada das atividades exercidas (Anexo 8 — Declaração de Horas Estagiadas)."
+                },
+                "aluno proprietário de empresa do mesmo segmento do curso": {
+                    "solicitação": "Solicitação de Equivalência de Estágio Supervisionado",
+                    "documentos": "Cópia do contrato social da empresa, Comprovante de inscrição e situação cadastral, Documento timbrado da empresa tomadora de serviço com a descrição pormenorizada das atividades exercidas",
+                    "Declaração de horas estagiadas (Anexo 8)": "Documento em papel timbrado da empresa tomadora do serviço, com descrição pormenorizada das atividades exercidas (Anexo 8 — Declaração de Horas Estagiadas)."
+                },
+                "entrega_comum": "Os documentos da situação do aluno e a solicitação preenchida e assinada devem ser entregues impressos ao professor responsável pelo estágio.",
+                "observacao_documental": "Para funcionário, a página específica de convalidação detalha autenticação e páginas da Carteira de Trabalho; a página geral de estágio também descreve cópia digital com dados pessoais e contrato. Conferir a orientação atual do Departamento de Estágio se houver dúvida sobre a forma da cópia."
+            },
+            "aplicabilidade": "Reconhecimento de atividade profissional já exercida e compatível com o curso; escolha somente o caso correspondente à situação do aluno, sem usar os documentos iniciais de um novo estágio."
+        },
+        "Documentos finais": {
+            "Relatório final": {
+                "entrega": "impresso"
+            },
+            "Avaliação de Desempenho do Estagiário": {
+                "entrega": "impresso"
+            },
+            "aplicabilidade": "Etapa final comum a quem realizou estágio e a quem teve a atividade profissional convalidada.",
+            "itens_comuns": {
+                "Relatório final (Anexo 5)": "Descrição pormenorizada das atividades do período computado para estágio; para convalidação, a página oficial especifica 240 horas e detalhamento das ações, atividades, metodologias e procedimentos.",
+                "Ficha de Avaliação de Desempenho do Estagiário (Anexo 6)": "Documento final impresso, conforme a orientação do responsável de que os documentos finais se aplicam aos dois caminhos."
+            },
+            "prazo_entrega": "Os documentos de término de estágio deverão ser entregues (no máximo) na semana seguinte à conclusão do mesmo. A aprovação do estágio será lançada no Siga no final do semestre em que o estágio for concluído."
+        },
+        "Responsável e atendimento": {
+            "Responsável": "Profa. Me. Eliamar Francelino do Prado",
+            "E-mail": "estagio.logistica@fatecbb.edu.br",
+            "Atendimento": "Quarta e Quinta das 18:00 às 19:00",
+            "Vagas": "Em construção"
+        },
+        "Links oficiais": {
+            "TCE estágio obrigatório remunerado": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-obrigatorio-remunerado-Logistica.docx",
+            "TCE estágio obrigatório não remunerado": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-obrigatorio-nao-remunerado-Logistica.docx",
+            "TCE estágio não obrigatório remunerado": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-nao-obrigatorio-remunerado-Logistica.docx",
+            "Anexo 5 — Relatório final": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo5_relatorio_final.doc",
+            "Anexo 6 — Ficha de avaliação de desempenho do estagiário": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/08/anexo6_ficha_avaliacao_desempenho_estagiario.docx",
+            "Anexo 7 — Solicitação de equivalência de estágio supervisionado": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo7_estagio_supervisionado.doc",
+            "Anexo 8 — Declaração de horas estagiadas": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo8_declaracao_horas_estagiadas.doc",
+            "Lei de Estágio (Lei nº 11.788/2008)": "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2008/lei/l11788.htm",
+            "Agentes de integração credenciados": "https://cpc.cps.sp.gov.br/agentes-de-integracao/"
+        }
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Quem é a responsável pelo estágio de Logística?",
+            "resposta": "Profa. Me. Eliamar Francelino do Prado. E-mail: estagio.logistica@fatecbb.edu.br. Atendimento: Quarta e Quinta, das 18:00 às 19:00."
+        },
+        {
+            "pergunta": "A partir de qual semestre o estágio é obrigatório?",
+            "resposta": "O estágio obrigatório é cumprido a partir do terceiro semestre do curso."
+        },
+        {
+            "pergunta": "Qual a diferença entre estágio obrigatório e não obrigatório?",
+            "resposta": "O obrigatório é estipulado no projeto do curso e sua carga horária é essencial para aprovação e obtenção do diploma. O não obrigatório é uma atividade opcional, acrescida à carga horária regular e obrigatória."
+        },
+        {
+            "pergunta": "Qual a duração máxima de um estágio?",
+            "resposta": "De acordo com o art. 11 da Lei de Estágio, o estágio não pode exceder 2 anos, exceto para estagiário com deficiência."
+        },
+        {
+            "pergunta": "Quais documentos preciso entregar para começar o estágio?",
+            "resposta": "Termo de Compromisso de Estágio (TCE) e Plano de Atividades de Estágio, preenchidos eletronicamente, assinados pelo estagiário e pela empresa, em 3 vias impressas entregues na secretaria acadêmica, junto com 1 via impressa da cópia do seguro contra acidentes pessoais. O estágio só pode começar após a entrega de todos os documentos assinados pelas três partes (Fatec, empresa e aluno)."
+        },
+        {
+            "pergunta": "Onde baixo o Termo de Compromisso de Estágio (TCE)?",
+            "resposta": "Obrigatório remunerado: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-obrigatorio-remunerado-Logistica.docx. Obrigatório não remunerado: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-obrigatorio-nao-remunerado-Logistica.docx. Não obrigatório remunerado: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2026/09/TCE-Estagio-nao-obrigatorio-remunerado-Logistica.docx"
+        },
+        {
+            "pergunta": "O que preciso saber sobre a apólice de seguro?",
+            "resposta": "Deve ser entregue a APÓLICE (e não a proposta), obtida na seguradora ou prestadora de serviços, constando número da apólice e seguradora. A vigência da apólice deve abranger todo o período do estágio, do início ao término."
+        },
+        {
+            "pergunta": "Quais documentos entrego ao final do estágio?",
+            "resposta": "Relatório final (Anexo 5): https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/anexo5_relatorio_final.doc e Ficha de avaliação de desempenho do estagiário (Anexo 6): https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/08/anexo6_ficha_avaliacao_desempenho_estagiario.docx. Ambos impressos, entregues ao professor responsável pelo estágio no máximo na semana seguinte à conclusão. A aprovação é lançada no SIGA no final do semestre em que o estágio for concluído."
+        },
+        {
+            "pergunta": "Qual o prazo para entregar os documentos de estágio em 2026?",
+            "resposta": "Até 27 de novembro de 2026."
+        },
+        {
+            "pergunta": "Como funciona a convalidação de estágio?",
+            "resposta": "Vale para quem trabalha com registro em carteira, é autônomo/prestador de serviços regularizado ou é proprietário de empresa do mesmo segmento do curso. Veja: https://fatecbb.cps.sp.gov.br/convalidacao-logistica/"
+        },
+        {
+            "pergunta": "Onde vejo os agentes de integração credenciados?",
+            "resposta": "https://cpc.cps.sp.gov.br/agentes-de-integracao/"
+        }
+    ]
+}

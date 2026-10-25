@@ -1,0 +1,29 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Quem somos?",
+    "fonte": "https://fatecbb.cps.sp.gov.br/quem-somos/",
+    "resumo": "A Faculdade de Tecnologia de Bebedouro é uma das 79 Unidades que oferecem Cursos Superiores de Graduação Tecnológica do Centro Estadual de Educação Tecnológica Paula Souza.",
+    "dados_estruturados": {
+        "fundador": "Jorge Caram Sabbag",
+        "motivo_homenagem": "trabalho como fundador e grande incentivador da Patrulha Ecológica",
+        "imagem": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/fachada.jpeg"
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "O que é a Fatec Bebedouro?",
+            "resposta": "A Faculdade de Tecnologia de Bebedouro é uma das 79 unidades que oferecem cursos superiores de graduação tecnológica do Centro Estadual de Educação Tecnológica Paula Souza."
+        },
+        {
+            "pergunta": "Quando a Fatec Bebedouro foi criada e quais cursos oferece?",
+            "resposta": "Foi criada em 2014 e oferece, de forma gratuita, os cursos superiores de Tecnologia em Logística e em Big Data no Agronegócio."
+        },
+        {
+            "pergunta": "Por que a Fatec Bebedouro se chama Jorge Caram Sabbag?",
+            "resposta": "Desde 22 de abril de 2015, pela Lei 15.816/15 (projeto de lei 569/2014, do Deputado Estadual Roberto Engler), a faculdade leva o nome de Jorge Caram Sabbag, comerciante falecido em 2010, em homenagem ao seu trabalho como fundador e grande incentivador da Patrulha Ecológica."
+        },
+        {
+            "pergunta": "Por que há um curso de Logística em Bebedouro?",
+            "resposta": "Bebedouro é a Capital Nacional da Laranja e busca ser também a Capital Nacional da Logística, pela instalação de diversas empresas do setor na cidade. Esse foi um dos motivos para trazer o curso de Logística."
+        }
+    ]
+}

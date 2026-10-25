@@ -1,0 +1,393 @@
+{
+  "name": "Subworkflow - Normalização multimodal Chatwoot",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "4567f1de-49e8-4adf-b8f2-6cd6ba3e5882",
+      "name": "Entrada do fluxo principal",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const body = $json.body ?? $json;\nconst message = body.message && typeof body.message === 'object' ? body.message : body;\nconst conversation = body.conversation ?? message.conversation ?? {};\nconst recentMessage = Array.isArray(conversation.messages) ? (conversation.messages[0] ?? {}) : {};\nconst caption = String(message.content ?? body.content ?? recentMessage.content ?? body.caption ?? body.text ?? body.chatInput ?? body.contentText ?? '').trim();\nconst rawAttachments = Array.isArray(message.attachments) ? message.attachments : Array.isArray(body.attachments) ? body.attachments : Array.isArray(recentMessage.attachments) ? recentMessage.attachments : body.attachment && typeof body.attachment === 'object' ? [body.attachment] : [];\nconst documentExtensions = new Set(['pdf','doc','docx','xls','xlsx','ppt','pptx','txt','csv','rtf','odt','ods']);\nfunction normalizeAttachment(a) {\n  const fileType = String(a.file_type ?? a.fileType ?? a.type ?? '').toLowerCase();\n  const mimeType = String(a.mime_type ?? a.mimeType ?? a.content_type ?? '').toLowerCase();\n  const dataUrl = String(a.data_url ?? a.url ?? a.download_url ?? a.dataUrl ?? '');\n  const fileName = String(a.file_name ?? a.filename ?? a.name ?? a.fileName ?? '');\n  const urlPath = dataUrl.split(/[?#]/, 1)[0];\n  const nameExtension = fileName.match(/\\.([a-z0-9]{2,8})$/i)?.[1] ?? '';\n  const urlExtension = urlPath.match(/\\.([a-z0-9]{2,8})$/i)?.[1] ?? '';\n  const extension = String(a.extension || nameExtension || urlExtension || '').toLowerCase().replace(/^\\./, '');\n  const isImage = fileType === 'image' || mimeType.startsWith('image/') || ['jpg','jpeg','png','webp','gif','heic'].includes(extension);\n  const isAudio = fileType === 'audio' || mimeType.startsWith('audio/') || ['mp3','m4a','ogg','oga','opus','wav','aac','amr','webm'].includes(extension);\n  const isDocument = fileType === 'file' || fileType === 'document' || mimeType.startsWith('application/') || mimeType.startsWith('text/') || documentExtensions.has(extension);\n  const rawSize = a.file_size ?? a.sizeBytes ?? a.fileSize ?? null;\n  const numericSize = rawSize === null || rawSize === undefined || rawSize === '' ? null : Number(rawSize);\n  const sizeBytes = numericSize !== null && Number.isFinite(numericSize) ? numericSize : null;\n  const kind = isImage ? 'image' : isAudio ? 'audio' : isDocument ? 'document' : 'unknown';\n  return {\n    id: String(a.id ?? ''),\n    kind,\n    fileType,\n    mimeType,\n    extension,\n    fileName,\n    dataUrl,\n    thumbnailUrl: String(a.thumb_url ?? a.thumbnail_url ?? a.thumbnailUrl ?? ''),\n    sizeBytes,\n    durationSeconds: a.duration_seconds ?? a.duration ?? a.metadata?.duration_seconds ?? a.metadata?.duration ?? a.durationSeconds ?? null,\n    downloadAvailable: Boolean(dataUrl),\n    processingStatus: 'pending'\n  };\n}\nconst attachments = rawAttachments.map(normalizeAttachment);\nconst inputType = attachments.length === 0 ? (caption ? 'text' : 'unknown') : (caption ? 'mixed' : 'attachments');\nconst conversationId = String(conversation.id ?? body.conversation_id ?? message.conversation_id ?? recentMessage.conversation_id ?? '');\nconst messageId = String(message.id ?? body.id ?? recentMessage.id ?? '');\nconst accountId = String(body.account?.id ?? body.account_id ?? '');\nconst sender = message.sender ?? body.sender ?? {};\nconst senderId = String(sender.id ?? '');\nconst source = String(body.source ?? 'chatwoot');\nconst sessionId = String(body.sessionId ?? (source === 'n8n_chat_test' ? 'n8n_chat_test' : 'chatwoot:' + conversationId));\nconst result = {\n  source,\n  channel: String(body.channel ?? (source === 'n8n_chat_test' ? 'n8nChatTest' : 'chatwoot')),\n  accountId,\n  conversationId,\n  messageId,\n  senderId,\n  sessionId,\n  chatwootEvent: String(body.event ?? ''),\n  messageType: String(message.message_type ?? body.message_type ?? ''),\n  inputType,\n  caption: attachments.length ? caption : '',\n  contentText: attachments.length ? '' : caption,\n  normalizationStatus: !attachments.length && caption ? 'ready' : 'pending',\n  normalizationPendingStep: inputType === 'unknown' ? 'no_text_or_attachment' : '',\n  attachmentCount: attachments.length,\n  attachments,\n  fromMe: false\n};\nconst output = { json: result };\nif (typeof $binary !== 'undefined' && $binary) output.binary = $binary;\nreturn output;"
+      },
+      "id": "8b7c423d-bcfc-4d38-b5a7-d0e90b391758",
+      "name": "Identificar modalidade e normalizar anexos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d0169a04-eb68-4fc8-84ab-79e50a34d705",
+                    "leftValue": "={{ $json.inputType }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "text"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Texto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3aa5cf2b-6cfa-43d8-a316-81c1af219b2f",
+                    "leftValue": "={{ $json.inputType }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "attachments"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Anexos"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1291854c-8c47-4712-a9e1-8ae786ee23b7",
+                    "leftValue": "={{ $json.inputType }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "mixed"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Texto + anexos"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Entrada não identificada"
+        }
+      },
+      "id": "9031a246-1595-4db2-a63c-da6b6d7a881d",
+      "name": "Encaminhar por tipo de entrada",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "normalization-status",
+              "name": "normalizationStatus",
+              "type": "string",
+              "value": "ready"
+            },
+            {
+              "id": "input-type",
+              "name": "inputType",
+              "type": "string",
+              "value": "text"
+            },
+            {
+              "id": "pending-step",
+              "name": "normalizationPendingStep",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "content-text",
+              "name": "contentText",
+              "type": "string",
+              "value": "={{ $json.contentText || $json.caption || '' }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "beedb400-a45e-4e19-9728-a8626dea5351",
+      "name": "Preparar saída — mensagem de texto",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        720,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "normalization-status",
+              "name": "normalizationStatus",
+              "type": "string",
+              "value": "ready"
+            },
+            {
+              "id": "input-type",
+              "name": "inputType",
+              "type": "string",
+              "value": "unknown"
+            },
+            {
+              "id": "pending-step",
+              "name": "normalizationPendingStep",
+              "type": "string",
+              "value": "unknown_input_context_passed_to_agent"
+            },
+            {
+              "id": "content-text",
+              "name": "contentText",
+              "type": "string",
+              "value": "={{ [String($json.caption ?? $json.contentText ?? '').trim(), '[Contexto interno dos anexos — não é texto escrito pelo usuário] Tipo de entrada ou arquivo não reconhecido pelo processamento atual. Não presumir o conteúdo do anexo.'].filter(Boolean).join('\\\\n\\\\n') }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "41922900-28ae-468f-8d88-e78185475550",
+      "name": "Preparar contexto — modalidade não suportada",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        720,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "B34exXTSXsfHnF8O"
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "861bf438-5b6e-4875-9cde-5915e1702887",
+      "name": "Processar um anexo no subworkflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "attachments",
+        "include": "allOtherFields",
+        "options": {
+          "destinationFieldName": "attachmentItem",
+          "includeBinary": false
+        }
+      },
+      "id": "d997fd49-b927-4d12-a1ea-6a470bf291c6",
+      "name": "Separar anexos por arquivo",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "5d2b6369-bcc1-4468-85a6-7e900bedd240",
+      "name": "Processar anexos individualmente",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        960,
+        0
+      ],
+      "notes": "Itera um anexo por vez. A saída Done consolida resultados; a saída Loop chama o filho e retorna para esta entrada."
+    },
+    {
+      "parameters": {
+        "jsCode": "const records = $input.all().map(item => item.json);\nif (!records.length) return [];\nconst first = records[0];\nconst caption = String(first.caption ?? '').trim();\nconst userTextParts = caption ? [caption] : [];\nconst notes = [];\nconst outcomes = records.map(record => {\n  const file = record.attachmentItem ?? {};\n  const fileName = String(file.fileName ?? 'arquivo sem nome');\n  const extension = String(file.extension ?? '').toLowerCase();\n  const kind = String(file.kind ?? 'unknown');\n  const status = String(record.attachmentStatus ?? 'pending');\n  const extracted = String(record.attachmentText ?? '').trim();\n  if (status === 'ready' && extracted) {\n    userTextParts.push(extracted);\n  } else {\n    const step = String(record.normalizationPendingStep ?? 'not_processed');\n    if (step === 'image_content_not_processed') notes.push('A imagem (' + fileName + ') não foi analisada e não teve OCR. Usar somente a legenda, se houver; sem pergunta em texto, pedir descrição ou pergunta escrita.');\n    else if (step === 'document_content_not_read_by_policy') notes.push('O documento (' + fileName + (extension ? ', .' + extension : '') + ') não foi lido. Usar somente a legenda; se a pergunta depender do conteúdo, pedir resumo/trecho ou oferecer atendimento humano.');\n    else if (step === 'audio_over_60_seconds') notes.push('O áudio (' + fileName + ') excede 60 segundos e não foi transcrito; orientar a enviar um áudio menor ou escrever a mensagem.');\n    else if (['audio_duration_unavailable','audio_duration_invalid','audio_binary_unavailable','audio_duration_not_available_for_60_second_limit'].includes(step)) notes.push('Não foi possível confirmar a duração do áudio (' + fileName + '), então ele não foi transcrito; orientar a enviar áudio de até 60 segundos ou escrever a mensagem.');\n    else if (['audio_download_failed','audio_transcription_failed_or_timeout','audio_transcription_empty'].includes(step)) notes.push('Não foi possível transcrever o áudio (' + fileName + '); orientar a reenviar ou escrever a mensagem.');\n    else if (step === 'attachment_exceeds_10mb_limit') notes.push('O anexo (' + fileName + ') excede 10 MiB e não foi processado; considerar somente a legenda, se houver, e pedir um arquivo menor ou mensagem de texto.');\n    else if (step === 'attachment_size_unavailable') notes.push('Não foi possível confirmar o tamanho do anexo (' + fileName + '); ele não foi baixado. Pedir um arquivo menor ou mensagem de texto.');\n    else if (step.startsWith('format_not_processed_')) notes.push('O formato ' + (extension || kind) + ' do anexo (' + fileName + ') não é processado; usar somente a legenda, se houver.');\n    else notes.push('Não foi possível extrair texto do anexo (' + fileName + '); não presumir o conteúdo do arquivo.');\n  }\n  const processingStatus = ['ready','unsupported','failed','pending'].includes(status) ? status : 'pending';\n  return { id: String(file.id ?? ''), kind, fileName, extension, mimeType: String(file.mimeType ?? ''), sizeBytes: file.sizeBytes ?? null, processingStatus };\n});\nconst userText = userTextParts.filter(Boolean).join('\\n\\n');\nconst userTextChars = userTextParts.filter(Boolean).reduce((total, part) => total + Array.from(part).length, 0);\nconst MAX_USER_TEXT_CHARS = 2000;\nconst overLimitNote = userTextChars > MAX_USER_TEXT_CHARS ? '[Contexto interno dos anexos — não é texto escrito pelo usuário] A soma da mensagem, legenda e transcrição excede 2.000 caracteres. O conteúdo foi descartado antes do agente; pedir um resumo ou trecho menor.' : '';\nconst visibleUserText = userTextChars > MAX_USER_TEXT_CHARS ? '' : userText;\nconst internalNotes = notes.length ? '[Contexto interno dos anexos — não é texto escrito pelo usuário]\\n' + notes.join('\\n') : '';\nconst combined = [visibleUserText, internalNotes, overLimitNote].filter(Boolean).join('\\n\\n');\nconst { attachmentItem, attachments: rawAttachments, downloadUrl, attachmentText, attachmentStatus, normalizationPendingStep, ...base } = first;\nreturn [{ json: { ...base, attachments: outcomes, attachmentCount: outcomes.length, processedAttachmentCount: outcomes.filter(item => item.processingStatus === 'ready').length, userTextChars, contentText: combined, normalizationStatus: combined.trim() ? 'ready' : 'pending', normalizationPendingStep: notes.length || overLimitNote ? 'attachment_context_passed_to_agent' : '' } }];"
+      },
+      "id": "13177bdb-7301-4e54-836a-e055f060307c",
+      "name": "Consolidar legenda e conteúdo dos anexos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        0
+      ],
+      "notes": "Agrega resultados por anexo, preserva legenda e transcrição, gera status seguro e aplica o limite agregado de 2.000 caracteres."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entrada do fluxo principal": {
+      "main": [
+        [
+          {
+            "node": "Identificar modalidade e normalizar anexos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identificar modalidade e normalizar anexos": {
+      "main": [
+        [
+          {
+            "node": "Encaminhar por tipo de entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encaminhar por tipo de entrada": {
+      "main": [
+        [
+          {
+            "node": "Preparar saída — mensagem de texto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Separar anexos por arquivo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Separar anexos por arquivo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar contexto — modalidade não suportada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    "Separar anexos por arquivo": {
+      "main": [
+        [
+          {
+            "node": "Processar anexos individualmente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar anexos individualmente": {
+      "main": [
+        [
+          {
+            "node": "Consolidar legenda e conteúdo dos anexos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Processar um anexo no subworkflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar um anexo no subworkflow": {
+      "main": [
+        [
+          {
+            "node": "Processar anexos individualmente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "a97e95ca-1646-4438-adee-fee09bd81e3d",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "b8307148f7a3f12364a5af731a5259298a076a8b600eb47f1ee91081801822bf"
+  },
+  "nodeGroups": [],
+  "id": "bf1MReoTnd7QMPBC",
+  "tags": []
+}

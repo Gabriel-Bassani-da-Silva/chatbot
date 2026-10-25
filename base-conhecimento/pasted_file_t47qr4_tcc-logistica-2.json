@@ -1,0 +1,49 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Tutorial de Autorização e Entrega de TCC",
+    "fonte": "https://fatecbb.cps.sp.gov.br/tcc-logistica-2/",
+    "resumo": "Tutorial para autorização e entrega de TCC",
+    "dados_estruturados": {
+        "tutorial_autorizacao_entrega": "Tutorial de Autorização e Entrega de TCC (PDF)",
+        "tutorial_autorizacao_entrega_url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/07/Tutorial-de-Autorizacao-e-Entrega-de-TCC.pdf",
+        "modelo": "Modelo de Anteprojeto",
+        "modelo_url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/08/modelo-anteprojetoLOG.docx",
+        "artigo": "Modelo para Elaboração de Artigo",
+        "artigo_url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/Modelo-para-elaboracao-de-Artigo.doc",
+        "monografia": "Modelo para Elaboração de Monografia",
+        "monografia_url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/03/Modelo_para_Elaboracao_de_Monografia.docx",
+        "relatorio_tecnico": "Modelo para Elaboração de Relatório Técnico",
+        "relatorio_tecnico_url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/03/Modelo_para_Elaboracao_de_Relatorio_Tecnico.docx",
+        "template_apresentacao": "Modelo TCC Logística",
+        "template_apresentacao_url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/05/Modelo_TCC_Logistica.pptx",
+        "manual_tg": "Manual de Elaboração de TCC",
+        "manual_tg_url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/03/Manual_TG.pdf",
+        "termo_autorizacao": "TERMO DE AUTORIZAÇÃO",
+        "termo_autorizacao_url": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/07/termo.docx",
+        "formulario_envio": "Formulário para Envio do TCC",
+        "formulario_envio_url": "https://forms.gle/wqmhiHwEf1L6EBTCA",
+        "observacoes_paginas": {
+            "Artigo científico": "Número de páginas conforme as regras da instituição que será submetido o artigo",
+            "Monografia": "Mínimo 35 páginas",
+            "Relatório técnico científico": "Mínimo 25 páginas"
+        }
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Como autorizo e entrego o TCC de Logística?",
+            "resposta": "O tutorial de autorização e entrega do TCC está em: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/07/Tutorial-de-Autorizacao-e-Entrega-de-TCC.pdf. O termo de autorização está em https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/07/termo.docx e o envio do TCC é feito pelo formulário https://forms.gle/wqmhiHwEf1L6EBTCA"
+        },
+        {
+            "pergunta": "Onde baixo os modelos de TCC de Logística?",
+            "resposta": "Anteprojeto: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/08/modelo-anteprojetoLOG.docx. Artigo científico: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/10/Modelo-para-elaboracao-de-Artigo.doc. Monografia: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/03/Modelo_para_Elaboracao_de_Monografia.docx. Relatório técnico científico: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/03/Modelo_para_Elaboracao_de_Relatorio_Tecnico.docx."
+        },
+        {
+            "pergunta": "Qual o tamanho mínimo do TCC de Logística?",
+            "resposta": "Monografia: mínimo de 35 páginas. Relatório técnico científico: mínimo de 25 páginas. Artigo científico: número de páginas conforme as regras da instituição que receberá o artigo."
+        },
+        {
+            "pergunta": "Existe template de apresentação e manual do TCC de Logística?",
+            "resposta": "Sim. Template de apresentação: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/05/Modelo_TCC_Logistica.pptx. Manual de elaboração de TCC: https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2025/03/Manual_TG.pdf"
+        }
+    ]
+}
