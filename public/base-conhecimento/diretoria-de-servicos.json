@@ -1,0 +1,24 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Diretoria de Serviços",
+    "fonte": "https://fatecbb.cps.sp.gov.br/diretoria-de-servicos/",
+    "resumo": "Setor responsável por todo processo administrativo através de atividades relativas à admissão, contratação de pessoal, concessão de benefícios, rescisão de contrato, manutenção, zeladoria, conservação de patrimônio, compras e vigilância.",
+    "dados_estruturados": {
+        "Diretora de Serviços Administrativos": "Aline Beatriz Ramos Luz",
+        "E-mail": "f280adm@cps.sp.gov.br"
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Quem é a diretora de serviços administrativos?",
+            "resposta": "Aline Beatriz Ramos Luz."
+        },
+        {
+            "pergunta": "Qual o e-mail da Diretoria de Serviços?",
+            "resposta": "f280adm@cps.sp.gov.br"
+        },
+        {
+            "pergunta": "O que a Diretoria de Serviços faz?",
+            "resposta": "É o setor responsável por todo o processo administrativo: admissão, contratação de pessoal, concessão de benefícios, rescisão de contrato, manutenção, zeladoria, conservação de patrimônio, compras e vigilância."
+        }
+    ]
+}

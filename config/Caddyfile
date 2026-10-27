@@ -4,9 +4,32 @@
 #   - n8n.{$DOMAIN}      → http://caddy:80
 #   - chatwoot.{$DOMAIN} → http://caddy:80
 
-# Domínio principal — somente a página inicial
+# Domínio principal público — somente a página inicial (sem endpoints de controle local)
 {$DOMAIN}:80 {
-    # Página inicial estática (index.html, style.css)
+    handle {
+        root * /srv/public
+        templates
+        file_server
+    }
+}
+
+# Acesso local restrito — página inicial e endpoint sob demanda para reiniciar containers locais
+localhost:80 {
+    # Endpoint seguro: reinicia apenas containers da stack chatbot_n8n
+    @dockerRestart {
+        method POST
+        path_regexp restart ^/api/docker/restart/([a-zA-Z0-9_\-]+)$
+    }
+    handle @dockerRestart {
+        @allowedContainers path_regexp ^/api/docker/restart/(chatbot_n8n-[a-zA-Z0-9_\-]+)$
+        handle @allowedContainers {
+            rewrite * /containers/{re.restart.1}/restart
+            reverse_proxy unix//var/run/docker.sock
+        }
+        respond "Container não permitido" 403
+    }
+
+    # Página inicial estática
     handle {
         root * /srv/public
         templates

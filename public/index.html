@@ -4,76 +4,674 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal do Assistente</title>
+  <title>Portal do Assistente — Fatec Bebedouro</title>
+  
+  <!-- Fontes Google: Inter e JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Ícones FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Estilos Customizados -->
   <link rel="stylesheet" href="style.css">
-
-  <!-- Fonte Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Ícones FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body data-domain='{{env "DOMAIN"}}'>
-  <div class="card">
-    <div class="header">
-      <i class="fa-solid fa-server icone-topo"></i>
-      <h1>Portal de Gerenciamento</h1>
-      <p>Selecione a plataforma para acessar o painel de controle.</p>
-    </div>
+  <!-- Background Glow & Grid Efeito Futurista -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+  <div class="bg-grid"></div>
 
-    <!-- Seletor de Modo: Local vs Público -->
-    <div class="tabs-container">
-      <button type="button" class="tab-btn active" id="tab-local" onclick="setMode('local')">
-        <i class="fa-solid fa-laptop"></i>
-        <span>Local</span>
-      </button>
-      <button type="button" class="tab-btn" id="tab-public" onclick="setMode('public')">
-        <i class="fa-solid fa-globe"></i>
-        <span>Público</span>
-      </button>
-    </div>
-
-    <!-- Indicador do Ambiente Ativo -->
-    <div class="badge-wrapper">
-      <div class="env-badge" id="env-badge">
-        <span class="status-dot"></span>
-        <span id="env-label">Portas Locais (Docker)</span>
+  <!-- Container Principal -->
+  <div class="app-container">
+    
+    <!-- Topo / Barra de Navegação Superior -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Assistente Virtual Fatec</h1>
+          <span class="brand-subtitle">Painel de Gerenciamento & Base de Conhecimento RAG</span>
+        </div>
       </div>
-    </div>
 
-    <!-- Links dos Serviços -->
-    <div class="links">
-      <!-- Botão n8n -->
-      <a id="btn-n8n" class="btn n8n" href="http://localhost:5678" target="_blank" rel="noopener">
-        <img src="https://cdn.simpleicons.org/n8n/ffffff" width="24" height="24" alt="Logo n8n" class="icone">
-        Acessar n8n
-      </a>
+      <!-- Controles de Topo: Alternador Local/Público e Status -->
+      <div class="header-controls">
+        <div class="tabs-container" role="tablist" aria-label="Modo de Conexão">
+          <button type="button" class="tab-btn active" id="tab-local" onclick="setMode('local')">
+            <i class="fa-solid fa-laptop"></i>
+            <span>Local</span>
+          </button>
+          <button type="button" class="tab-btn" id="tab-public" onclick="setMode('public')">
+            <i class="fa-solid fa-globe"></i>
+            <span>Público</span>
+          </button>
+        </div>
 
-      <!-- Botão Chatwoot -->
-      <a id="btn-chatwoot" class="btn chatwoot" href="http://localhost:3001" target="_blank" rel="noopener">
-        <img src="https://cdn.simpleicons.org/chatwoot/ffffff" width="24" height="24" alt="Logo Chatwoot" class="icone">
-        Acessar Chatwoot
-      </a>
-
-      <!-- Botão WAHA (apenas no modo local) -->
-      <a id="btn-waha" class="btn waha" href="http://localhost:3000/dashboard" target="_blank" rel="noopener">
-        <img src="https://cdn.simpleicons.org/whatsapp/ffffff" width="24" height="24" alt="Logo WhatsApp" class="icone">
-        Acessar WAHA (WhatsApp)
-      </a>
-
-      <!-- Aviso no modo público informando que WAHA é local -->
-      <div id="waha-notice" class="public-notice" style="display: none;">
-        <i class="fa-solid fa-shield-halved"></i>
-        <span>WAHA restrito ao acesso local (127.0.0.1:3000)</span>
+        <div class="env-badge" id="env-badge">
+          <span class="status-dot"></span>
+          <span id="env-label">Portas Locais (Docker)</span>
+        </div>
       </div>
-    </div>
+    </header>
 
-    <div class="footer">
-      &copy; 2026 Gabriel Bassani da Silva. Todos os direitos reservados.
+    <!-- Menu de Navegação em Abas Principais -->
+    <nav class="main-nav">
+      <button type="button" class="nav-tab active" data-target="tab-servicos" onclick="switchSection('tab-servicos')">
+        <i class="fa-solid fa-cubes"></i>
+        <span>Hub de Serviços</span>
+      </button>
+      <button type="button" class="nav-tab" data-target="tab-base" onclick="switchSection('tab-base')">
+        <i class="fa-solid fa-database"></i>
+        <span>Base de Conhecimento RAG</span>
+        <span class="badge-count" id="doc-count-badge">23</span>
+      </button>
+      <button type="button" class="nav-tab" data-target="tab-tutoriais" onclick="switchSection('tab-tutoriais')">
+        <i class="fa-brands fa-github"></i>
+        <span>Tutoriais & Documentação</span>
+      </button>
+      <button type="button" class="nav-tab" data-target="tab-acoes" onclick="switchSection('tab-acoes')">
+        <i class="fa-solid fa-bolt"></i>
+        <span>Ações Rápidas & Sync</span>
+      </button>
+    </nav>
+
+    <!-- CONTEÚDO PRINCIPAL (SEÇÕES) -->
+    <main class="main-content">
+
+      <!-- ================================================================= -->
+      <!-- SEÇÃO 1: HUB DE SERVIÇOS -->
+      <!-- ================================================================= -->
+      <section id="tab-servicos" class="tab-content active">
+        <div class="section-header">
+          <div>
+            <h2>Plataformas e Serviços Conectados</h2>
+            <p>Acesse as ferramentas e os consoles de monitoramento da stack.</p>
+          </div>
+        </div>
+
+        <div class="services-grid">
+          <!-- Card n8n -->
+          <div class="service-card n8n-card">
+            <div class="service-header">
+              <div class="service-icon n8n-icon">
+                <img src="https://cdn.simpleicons.org/n8n/ffffff" width="28" height="28" alt="Logo n8n">
+              </div>
+              <span class="service-status online" id="status-n8n">
+                <span class="status-dot"></span> Ativo
+              </span>
+            </div>
+            <h3>n8n Workflow Automation</h3>
+            <p>Orquestração dos agentes RAG, processamento de mensagens, Google Drive, Calendar e Sheets.</p>
+            <div class="service-footer">
+              <div class="service-actions-row">
+                <a id="btn-n8n" class="service-btn btn-n8n" href="http://localhost:5678" target="_blank" rel="noopener">
+                  <span>Abrir n8n</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+                <button type="button" class="btn-restart-action" onclick="restartService('chatbot_n8n-n8n-1', 'n8n')" title="Reiniciar container n8n">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Chatwoot -->
+          <div class="service-card chatwoot-card">
+            <div class="service-header">
+              <div class="service-icon chatwoot-icon">
+                <img src="https://cdn.simpleicons.org/chatwoot/ffffff" width="28" height="28" alt="Logo Chatwoot">
+              </div>
+              <span class="service-status online" id="status-chatwoot">
+                <span class="status-dot"></span> Ativo
+              </span>
+            </div>
+            <h3>Chatwoot Omnichannel</h3>
+            <p>Inbox de atendimento ao usuário, histórico de conversas do WhatsApp e transbordo para humanos.</p>
+            <div class="service-footer">
+              <div class="service-actions-row">
+                <a id="btn-chatwoot" class="service-btn btn-chatwoot" href="http://localhost:3001" target="_blank" rel="noopener">
+                  <span>Abrir Chatwoot</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+                <button type="button" class="btn-restart-action" onclick="restartService('chatbot_n8n-chatwoot-web-1', 'Chatwoot')" title="Reiniciar container Chatwoot">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card WAHA -->
+          <div class="service-card waha-card">
+            <div class="service-header">
+              <div class="service-icon waha-icon">
+                <img src="https://cdn.simpleicons.org/whatsapp/ffffff" width="28" height="28" alt="Logo WhatsApp">
+              </div>
+              <span class="service-status" id="status-waha">
+                <span class="status-dot"></span> Local
+              </span>
+            </div>
+            <h3>WAHA (WhatsApp API)</h3>
+            <p>Conexão via QR Code com o número de WhatsApp da Fatec Bebedouro e envio/recebimento de áudios.</p>
+            <div class="service-footer">
+              <div class="service-actions-row">
+                <a id="btn-waha" class="service-btn btn-waha" href="http://localhost:3000/dashboard" target="_blank" rel="noopener">
+                  <span>Painel WAHA</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+                <button type="button" class="btn-restart-action" onclick="restartService('chatbot_n8n-waha-1', 'WAHA')" title="Reiniciar container WAHA">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+              <div id="waha-notice" class="public-notice" style="display: none;">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Disponível apenas via localhost:3000</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Speaches AI STT -->
+          <div class="service-card speaches-card">
+            <div class="service-header">
+              <div class="service-icon speaches-icon">
+                <i class="fa-solid fa-microphone-lines"></i>
+              </div>
+              <span class="service-status online" id="status-speaches">
+                <span class="status-dot"></span> CUDA GPU
+              </span>
+            </div>
+            <h3>Speaches AI (Whisper)</h3>
+            <p>Servidor local de transcrição de áudio acelerado por GPU NVIDIA. Converte áudios de até 60s em texto.</p>
+            <div class="service-footer">
+              <div class="service-actions-row">
+                <a id="btn-speaches" class="service-btn btn-speaches" href="http://localhost:8000/docs" target="_blank" rel="noopener">
+                  <span>API Docs (Swagger)</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+                <button type="button" class="btn-restart-action" onclick="restartService('chatbot_n8n-speaches-1', 'Speaches AI')" title="Reiniciar container Speaches">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Ollama LLM -->
+          <div class="service-card ollama-card">
+            <div class="service-header">
+              <div class="service-icon ollama-icon">
+                <i class="fa-solid fa-robot"></i>
+              </div>
+              <span class="service-status online" id="status-ollama">
+                <span class="status-dot"></span> Ativo
+              </span>
+            </div>
+            <h3>Ollama (LLM & Embeddings)</h3>
+            <p>Modelos locais: Llama 3.1 para raciocínio e Qwen3-Embedding (1024d) para geração dos vetores da base.</p>
+            <div class="service-footer">
+              <span class="service-tag">Modelo: llama3.1 & qwen3-embedding</span>
+            </div>
+          </div>
+
+          <!-- Card PGVector -->
+          <div class="service-card postgres-card">
+            <div class="service-header">
+              <div class="service-icon postgres-icon">
+                <img src="https://cdn.simpleicons.org/postgresql/ffffff" width="28" height="28" alt="Logo Postgres">
+              </div>
+              <span class="service-status online" id="status-postgres">
+                <span class="status-dot"></span> 142 Vetores
+              </span>
+            </div>
+            <h3>PostgreSQL & PGVector</h3>
+            <p>Banco vetorial com índice HNSW para busca semântica veloz por similaridade de cosseno em milissegundos.</p>
+            <div class="service-footer">
+              <div class="service-actions-row">
+                <span class="service-tag" style="flex: 1;">Tabela: fatec_rag_vectors_poc</span>
+                <button type="button" class="btn-restart-action" onclick="restartService('chatbot_n8n-postgres-1', 'PostgreSQL')" title="Reiniciar banco Postgres">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- SEÇÃO 2: BASE DE CONHECIMENTO & INGESTÃO DE ARQUIVOS -->
+      <!-- ================================================================= -->
+      <section id="tab-base" class="tab-content">
+        <div class="section-header">
+          <div>
+            <h2>Gestão da Base de Conhecimento RAG</h2>
+            <p>Adicione novos arquivos JSON, valide o formato e gerencie a sincronização de documentos.</p>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="action-btn primary" onclick="triggerGdriveSync()">
+              <i class="fa-brands fa-google-drive"></i>
+              <span>Sincronizar Google Drive</span>
+            </button>
+            <a class="action-btn secondary" href="https://drive.google.com/drive/folders/1AtN4X4jp5okt8ChlwRmYMpI4XwQuurF0" target="_blank" rel="noopener">
+              <i class="fa-solid fa-folder-open"></i>
+              <span>Abrir Pasta do Drive</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Área de Upload e Validação Interativa -->
+        <div class="uploader-container">
+          <div class="uploader-dropzone" id="dropzone">
+            <input type="file" id="file-input" accept=".json" style="display: none;">
+            <div class="dropzone-content" onclick="document.getElementById('file-input').click()">
+              <div class="dropzone-icon">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+              </div>
+              <h3>Arraste um arquivo JSON aqui ou clique para selecionar</h3>
+              <p>O arquivo será validado instantaneamente conforme a estrutura obrigatória da base RAG da Fatec.</p>
+              <div class="format-chips">
+                <span class="chip"><i class="fa-solid fa-check"></i> .json</span>
+                <span class="chip"><i class="fa-solid fa-check"></i> UTF-8</span>
+                <span class="chip"><i class="fa-solid fa-check"></i> Schema RAG</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card de Resultado da Validação -->
+          <div class="validation-panel" id="validation-panel" style="display: none;">
+            <div class="validation-header">
+              <div class="file-summary">
+                <i class="fa-solid fa-file-code file-icon"></i>
+                <div>
+                  <h4 id="val-file-name">arquivo.json</h4>
+                  <span id="val-file-size">0 KB</span>
+                </div>
+              </div>
+              <div id="val-status-badge" class="val-badge valid">
+                <i class="fa-solid fa-circle-check"></i> Válido
+              </div>
+            </div>
+
+            <div class="validation-body">
+              <div class="stats-row">
+                <div class="stat-card">
+                  <span class="stat-label">Título</span>
+                  <span class="stat-val" id="val-title">-</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-label">Categoria</span>
+                  <span class="stat-val" id="val-category">-</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-label">FAQs</span>
+                  <span class="stat-val" id="val-faqs">0</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-label">Seções</span>
+                  <span class="stat-val" id="val-sections">0</span>
+                </div>
+              </div>
+
+              <!-- Lista de Alertas / Erros -->
+              <div id="val-messages" class="val-messages"></div>
+            </div>
+
+            <div class="validation-footer">
+              <button type="button" class="btn-tool" onclick="downloadCurrentValidatedJson()">
+                <i class="fa-solid fa-download"></i> Baixar JSON Formatado
+              </button>
+              <button type="button" class="btn-tool primary" id="btn-ingest-json" onclick="ingestCurrentFile()">
+                <i class="fa-solid fa-paper-plane"></i> Ingerir via Sincronizador
+              </button>
+              <button type="button" class="btn-tool text-btn" onclick="clearSelectedFile()">
+                <i class="fa-solid fa-trash-can"></i> Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banner Explicativo com Template -->
+        <div class="info-card-banner">
+          <div class="banner-icon">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div class="banner-text">
+            <h4>Como funciona a ingestão de novos documentos?</h4>
+            <p>Você pode adicionar arquivos <strong>.json</strong> diretamente na <a href="https://drive.google.com/drive/folders/1AtN4X4jp5okt8ChlwRmYMpI4XwQuurF0" target="_blank" rel="noopener">Pasta Oficial do Google Drive</a> ou salvar no repositório. Cada documento deve seguir o padrão institucional com perguntas frequentes e seções detalhadas.</p>
+          </div>
+          <div class="banner-action">
+            <button type="button" class="action-btn secondary small" onclick="downloadSchemaTemplate()">
+              <i class="fa-solid fa-file-arrow-down"></i>
+              <span>Baixar Modelo Template</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Catálogo dos 22 Arquivos Existentes na Base -->
+        <div class="catalog-section">
+          <div class="catalog-header">
+            <div>
+              <h3>Arquivos Atualmente na Base de Conhecimento</h3>
+              <p>23 documentos oficiais fatiados em 299 chunks vetoriais no PGVector.</p>
+            </div>
+            
+            <div class="catalog-search">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input type="text" id="kb-search-input" placeholder="Buscar documento ou palavra-chave..." oninput="filterDocuments()">
+            </div>
+          </div>
+
+          <!-- Filtros de Categoria -->
+          <div class="category-filters" id="category-filters">
+            <button type="button" class="cat-pill active" onclick="filterCategory('todos')">Todos (23)</button>
+            <button type="button" class="cat-pill" onclick="filterCategory('cursos')">Cursos & Grades</button>
+            <button type="button" class="cat-pill" onclick="filterCategory('estagio')">Estágio & TCC</button>
+            <button type="button" class="cat-pill" onclick="filterCategory('institucional')">Institucional</button>
+            <button type="button" class="cat-pill" onclick="filterCategory('servicos')">Serviços Acadêmicos</button>
+          </div>
+
+          <!-- Grid dos Documentos -->
+          <div class="docs-grid" id="docs-grid">
+            <!-- Renderizado dinamicamente via portal.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- SEÇÃO 3: TUTORIAIS & DOCUMENTAÇÃO DO GITHUB -->
+      <!-- ================================================================= -->
+      <section id="tab-tutoriais" class="tab-content">
+        <div class="section-header">
+          <div>
+            <h2>Tutoriais & Documentação Técnica</h2>
+            <p>Guias passo a passo ilustrados com telas reais para configurar cada módulo do ecossistema.</p>
+          </div>
+          <a class="action-btn secondary" href="https://github.com/Gabriel-Bassani-da-Silva/chatbot" target="_blank" rel="noopener">
+            <i class="fa-brands fa-github"></i>
+            <span>Ver Repositório no GitHub</span>
+          </a>
+        </div>
+
+        <div class="tutorials-grid">
+          
+          <!-- Tutorial 1: Google APIs -->
+          <div class="tutorial-card">
+            <div class="tutorial-badge gcp">
+              <i class="fa-brands fa-google"></i> Google Cloud Platform
+            </div>
+            <h3>Conexão Google Workspace (Drive, Calendar & Sheets)</h3>
+            <p>Aprenda a configurar credenciais OAuth 2.0 no Google Cloud Console, resolver o erro de expiração de token em 7 dias (publicação em produção) e conceder permissões para os workflows do n8n.</p>
+            <ul class="tutorial-topics">
+              <li><i class="fa-solid fa-check"></i> Telas passo a passo do Google Cloud Console</li>
+              <li><i class="fa-solid fa-check"></i> Resolução do Refresh Token expirando em 7 dias</li>
+              <li><i class="fa-solid fa-check"></i> Configuração dos nós de Drive, Calendar e Sheets</li>
+            </ul>
+            <div class="tutorial-links">
+              <a class="guide-link" href="https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/google/Guia%20ilustrado%20%E2%80%94%20conex%C3%A3o%20com%20Google%20Sheets,%20Calendar%20e%20Drive.md" target="_blank" rel="noopener">
+                <span>Abrir Guia no GitHub</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Tutorial 2: Speaches Local AI -->
+          <div class="tutorial-card">
+            <div class="tutorial-badge speaches">
+              <i class="fa-solid fa-microphone"></i> IA Local & Whisper
+            </div>
+            <h3>Transcrição Local de Áudio com Speaches (GPU CUDA)</h3>
+            <p>Guia detalhado de deploy do container Speaches com aceleração NVIDIA CUDA. Permite que áudios recebidos pelo WhatsApp sejam transcritos localmente em poucos segundos com privacidade total.</p>
+            <ul class="tutorial-topics">
+              <li><i class="fa-solid fa-check"></i> Suporte a drivers NVIDIA Container Toolkit</li>
+              <li><i class="fa-solid fa-check"></i> Pipeline de áudio do n8n (limite seguro de 60s / 10MB)</li>
+              <li><i class="fa-solid fa-check"></i> Normalização multimodal antes do agente RAG</li>
+            </ul>
+            <div class="tutorial-links">
+              <a class="guide-link" href="https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/speaches/Guia%20ilustrado%20%E2%80%94%20transcri%C3%A7%C3%A3o%20de%20%C3%A1udio%20com%20Speaches.md" target="_blank" rel="noopener">
+                <span>Abrir Guia no GitHub</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Tutorial 3: Cloudflare Tunnel -->
+          <div class="tutorial-card">
+            <div class="tutorial-badge cloudflare">
+              <i class="fa-solid fa-shield-halved"></i> Cloudflare Zero Trust
+            </div>
+            <h3>Rotas Seguras com Cloudflare Tunnel</h3>
+            <p>Exposição dos serviços (n8n e Chatwoot) sem abrir portas no roteador, com certificado SSL automático, proteção contra DDoS e isolamento seguro de portas de administração.</p>
+            <ul class="tutorial-topics">
+              <li><i class="fa-solid fa-check"></i> Configuração de Public Hostnames no Zero Trust</li>
+              <li><i class="fa-solid fa-check"></i> Roteamento do Caddyfile para WebSocket e Webhooks</li>
+              <li><i class="fa-solid fa-check"></i> Isolamento seguro de portas internas (WAHA e Postgres)</li>
+            </ul>
+            <div class="tutorial-links">
+              <a class="guide-link" href="https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/cloudflare/Guia%20ilustrado%20%E2%80%94%20rotas%20do%20Cloudflare%20Tunnel.md" target="_blank" rel="noopener">
+                <span>Abrir Guia no GitHub</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Tutorial 4: Credenciais e Workflows -->
+          <div class="tutorial-card">
+            <div class="tutorial-badge creds">
+              <i class="fa-solid fa-key"></i> Credenciais & Variáveis
+            </div>
+            <h3>Mapeamento de Credenciais e Workflows n8n</h3>
+            <p>Referência consolidada de todas as credenciais cadastradas na instância do n8n, IDs dos workflows principais e subworkflows, portas de serviços e variáveis do arquivo .env.</p>
+            <ul class="tutorial-topics">
+              <li><i class="fa-solid fa-check"></i> Lista de IDs de credenciais no banco do n8n</li>
+              <li><i class="fa-solid fa-check"></i> Parâmetros dos workflows RAG, Agenda e Cardápio</li>
+              <li><i class="fa-solid fa-check"></i> Dicionário de variáveis de ambiente para deploy</li>
+            </ul>
+            <div class="tutorial-links">
+              <a class="guide-link" href="https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/credenciais-workflows-n8n.md" target="_blank" rel="noopener">
+                <span>Abrir Guia no GitHub</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Tutorial 5: Base de Conhecimento no GitHub -->
+          <div class="tutorial-card">
+            <div class="tutorial-badge repo">
+              <i class="fa-solid fa-folder-tree"></i> Repositório
+            </div>
+            <h3>Pasta Oficial: base-conhecimento/</h3>
+            <p>Navegue diretamente pelos 22 arquivos JSON originais no repositório GitHub para verificar commits, histórico de alterações curriculares e adicionar novos documentos via Pull Request.</p>
+            <ul class="tutorial-topics">
+              <li><i class="fa-solid fa-check"></i> Todos os arquivos nomeados em padrão kebab-case</li>
+              <li><i class="fa-solid fa-check"></i> Histórico de alterações e auditoria Git</li>
+              <li><i class="fa-solid fa-check"></i> Controle de versão de regulamentos e matrizes</li>
+            </ul>
+            <div class="tutorial-links">
+              <a class="guide-link" href="https://github.com/Gabriel-Bassani-da-Silva/chatbot/tree/main/base-conhecimento" target="_blank" rel="noopener">
+                <span>Explorar no GitHub</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- SEÇÃO 4: AÇÕES RÁPIDAS & WEBHOOKS -->
+      <!-- ================================================================= -->
+      <section id="tab-acoes" class="tab-content">
+        <div class="section-header">
+          <div>
+            <h2>Ações Rápidas & Sincronização</h2>
+            <p>Dispare sincronizações imediatas sob demanda sem aguardar timers ou polling periódico.</p>
+          </div>
+        </div>
+
+        <div class="quick-actions-grid">
+          <!-- Ação 1: Sync Google Drive -->
+          <div class="action-card">
+            <div class="action-card-header">
+              <div class="action-icon gdrive">
+                <i class="fa-brands fa-google-drive"></i>
+              </div>
+              <span class="action-tag">Sob Demanda</span>
+            </div>
+            <h3>Sincronizar Google Drive</h3>
+            <p>Lê todos os arquivos <code>.json</code> da pasta monitorada no Google Drive, limpa vetores antigos e grava os novos no PGVector.</p>
+            <div class="endpoint-box">
+              <code>POST /webhook/sincronizar-gdrive</code>
+              <button type="button" class="copy-btn" onclick="copyWebhookUrl('sincronizar-gdrive')">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+            <button type="button" class="btn-action primary" onclick="triggerGdriveSync()">
+              <i class="fa-solid fa-play"></i> Disparar Sincronização Agora
+            </button>
+          </div>
+
+          <!-- Ação 2: Sync Modelo de Embedding -->
+          <div class="action-card">
+            <div class="action-card-header">
+              <div class="action-icon model">
+                <i class="fa-solid fa-arrows-rotate"></i>
+              </div>
+              <span class="action-tag">Sob Demanda</span>
+            </div>
+            <h3>Verificar Mudança de Modelo</h3>
+            <p>Compara o modelo de embedding ativo no Agente RAG com o do banco. Se mudou, atualiza a dimensão da coluna e do índice HNSW.</p>
+            <div class="endpoint-box">
+              <code>POST /webhook/sincronizar-modelo-embedding</code>
+              <button type="button" class="copy-btn" onclick="copyWebhookUrl('sincronizar-modelo-embedding')">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+            <button type="button" class="btn-action secondary" onclick="triggerModelSync()">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> Verificar Modelo Agora
+            </button>
+          </div>
+
+          <!-- Ação 3: Pasta Google Drive -->
+          <div class="action-card">
+            <div class="action-card-header">
+              <div class="action-icon folder">
+                <i class="fa-solid fa-folder-open"></i>
+              </div>
+              <span class="action-tag">Repositório Remoto</span>
+            </div>
+            <h3>Pasta Oficial no Google Drive</h3>
+            <p>Pasta compartilhada onde arquivos de conhecimento podem ser adicionados, editados ou removidos pela equipe da faculdade.</p>
+            <div class="endpoint-box">
+              <code>ID: 1AtN4X4jp5okt8ChlwRmYMpI4XwQuurF0</code>
+            </div>
+            <a class="btn-action outline" href="https://drive.google.com/drive/folders/1AtN4X4jp5okt8ChlwRmYMpI4XwQuurF0" target="_blank" rel="noopener">
+              <i class="fa-solid fa-external-link"></i> Abrir no Google Drive
+            </a>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <p>&copy; 2026 Gabriel Bassani da Silva. Todos os direitos reservados.</p>
+        <div class="footer-links">
+          <a href="https://github.com/Gabriel-Bassani-da-Silva/chatbot" target="_blank" rel="noopener">
+            <i class="fa-brands fa-github"></i> Repositório GitHub
+          </a>
+          <span class="separator">•</span>
+          <span class="fatec-label">Fatec Bebedouro — Jorge Caram Sabbag</span>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Modal Interativo: Visualizador de Contexto Completo (Texto Formatado e JSON Bruto) -->
+  <div id="doc-viewer-modal" class="modal-backdrop" style="display: none;" onclick="handleModalBackdropClick(event)">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-doc-title">
+      
+      <!-- Cabeçalho do Modal -->
+      <div class="modal-header">
+        <div class="modal-header-info">
+          <div class="modal-badges">
+            <span id="modal-cat-badge" class="doc-badge institucional">Institucional</span>
+            <span id="modal-file-badge" class="doc-file-name"><i class="fa-solid fa-file-lines"></i> documento.json</span>
+            <span id="modal-meta-faqs" class="doc-stat-pill"><i class="fa-solid fa-circle-question"></i> 0 FAQs</span>
+            <span id="modal-meta-sections" class="doc-stat-pill"><i class="fa-solid fa-list-check"></i> 0 seções</span>
+          </div>
+          <h3 id="modal-doc-title" class="modal-title">Título do Documento</h3>
+        </div>
+        
+        <button type="button" class="modal-close-btn" onclick="closeDocViewerModal()" aria-label="Fechar visualizador" title="Fechar (Esc)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Barra de Ferramentas / Alternador de Abas -->
+      <div class="modal-toolbar">
+        <div class="viewer-tabs" role="tablist">
+          <button type="button" class="viewer-tab active" id="tab-view-text" onclick="switchViewerTab('text')">
+            <i class="fa-solid fa-align-left"></i>
+            <span>Texto Completo (.md)</span>
+          </button>
+          <button type="button" class="viewer-tab" id="tab-view-json" onclick="switchViewerTab('json')">
+            <i class="fa-solid fa-code"></i>
+            <span>JSON Bruto (.json)</span>
+          </button>
+        </div>
+
+        <div class="viewer-actions">
+          <button type="button" class="action-btn-sm secondary" onclick="copyCurrentViewerContent()" title="Copiar conteúdo exibido">
+            <i class="fa-regular fa-copy"></i>
+            <span>Copiar</span>
+          </button>
+          <button type="button" class="action-btn-sm secondary" onclick="downloadCurrentViewerFile()" title="Baixar arquivo">
+            <i class="fa-solid fa-download"></i>
+            <span>Baixar</span>
+          </button>
+          <a id="modal-github-link" class="action-btn-sm outline" href="#" target="_blank" rel="noopener" title="Abrir no GitHub">
+            <i class="fa-brands fa-github"></i>
+            <span>GitHub</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Corpo com Conteúdo Scrollável -->
+      <div class="modal-body">
+        <!-- Visualização 1: Markdown Renderizado -->
+        <div id="viewer-content-text" class="viewer-panel active">
+          <div id="viewer-text-body" class="markdown-rendered-view">
+            <!-- Renderizado dinamicamente -->
+          </div>
+        </div>
+
+        <!-- Visualização 2: JSON Bruto Formatado -->
+        <div id="viewer-content-json" class="viewer-panel" style="display: none;">
+          <pre class="json-code-block"><code id="viewer-json-body"></code></pre>
+        </div>
+      </div>
+
+      <!-- Rodapé do Modal -->
+      <div class="modal-footer">
+        <span class="modal-tip"><i class="fa-solid fa-circle-info"></i> Alterne entre a leitura formatada (.md) e os dados brutos (.json). Pressione <strong>Esc</strong> para fechar.</span>
+        <button type="button" class="btn-tool" onclick="closeDocViewerModal()">Fechar</button>
+      </div>
+
     </div>
   </div>
 
+  <!-- Toast Container para Alertas e Feedback -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="kb-data.js"></script>
   <script src="portal.js"></script>
 </body>
 

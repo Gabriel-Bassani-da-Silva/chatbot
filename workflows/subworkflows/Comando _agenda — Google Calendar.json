@@ -42,7 +42,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const original = $('Entrada do workflow principal').item.json ?? {};\nconst text = String(original.contentText ?? '').trim();\nconst raw = $json.output ?? $json;\nconst parsed = raw && typeof raw === 'object' ? raw : {};\nconst clean = value => typeof value === 'string' && value.trim() ? value.trim() : null;\nlet nome = clean(parsed.nome);\nlet assunto = clean(parsed.assunto);\nlet data = clean(parsed.data);\nlet hora = clean(parsed.hora);\nconst sessionKey = String(original.appSessionKey ?? '');\nlet oldState = null;\ntry {\n  const value = $('Redis — ler confirmação').item.json.pendingState;\n  oldState = typeof value === 'string' ? JSON.parse(value) : (value && typeof value === 'object' ? value : null);\n} catch { oldState = null; }\nconst stateAge = oldState ? Date.now() - Number(oldState.summaryAt ?? 0) : Number.POSITIVE_INFINITY;\nconst sameSession = oldState && oldState.sessionKey === sessionKey;\nconst norm = value => String(value ?? '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/[.!?,;]+/g, ' ').replace(/\\s+/g, ' ').trim();\nconst affirmative = /^(sim|confirmo|isso mesmo|pode agendar|pode marcar|esta certo|tudo certo|correto|confirmado|pode fechar)$/.test(norm(text));\nfunction result(action, output, extra = {}) { return { json: { ...original, action, output, ...extra } }; }\nfunction pending(output, summaryAt) { return result('pending', output, { pendingState: JSON.stringify({ sessionKey, summaryAt }) }); }\nif (/^\\/cancelar$/i.test(text)) return pending('Solicitação de agendamento cancelada. Nenhum evento foi consultado ou criado.', 0);\nif (nome && nome.length > 120) nome = null;\nif (assunto && assunto.length > 240) assunto = null;\nlet dateParts = null;\nif (data) {\n  let m = data.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);\n  if (m) dateParts = { day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };\n  else {\n    m = data.match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);\n    if (m) dateParts = { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };\n  }\n  if (!dateParts) data = null;\n}\nlet timeParts = null;\nif (hora) {\n  const m = hora.match(/^([01]\\d|2[0-3]):([0-5]\\d)$/);\n  if (m) timeParts = { hour: Number(m[1]), minute: Number(m[2]) };\n  else hora = null;\n}\nif (dateParts) {\n  const d = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day));\n  if (d.getUTCFullYear() !== dateParts.year || d.getUTCMonth() !== dateParts.month - 1 || d.getUTCDate() !== dateParts.day) { data = null; dateParts = null; }\n}\nif (!nome || !assunto || !data || !hora || !dateParts || !timeParts) {\n  const missing = [];\n  if (!nome) missing.push('seu nome');\n  if (!assunto) missing.push('o motivo da consulta');\n  if (!data) missing.push('a data (pode dizer, por exemplo, “amanhã”)');\n  if (!hora) missing.push('o horário');\n  return pending('Vamos agendar uma consulta de 30 minutos. Para continuar, informe ' + missing.join(', ') + '. Ainda não consultei a agenda.', 0);\n}\nconst start = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day, timeParts.hour + 3, timeParts.minute));\nif (!Number.isFinite(start.getTime()) || start.getTime() <= Date.now()) return pending('Essa data e horário já passaram ou não são válidos. Informe uma data e hora futuras no horário de São Paulo.', 0);\nconst end = new Date(start.getTime() + 30 * 60 * 1000);\nconst dayText = String(dateParts.day).padStart(2, '0') + '/' + String(dateParts.month).padStart(2, '0') + '/' + dateParts.year;\nconst timeText = String(timeParts.hour).padStart(2, '0') + ':' + String(timeParts.minute).padStart(2, '0');\nconst displayDate = dayText + ' às ' + timeText + ' (horário de São Paulo)';\nif (affirmative && sameSession && stateAge >= 0 && stateAge <= 30 * 60 * 1000) {\n  const digits = value => String(value).replace(/\\D/g, '');\n  const eventId = 'agenda' + digits(original.conversationId) + 'm' + digits(original.messageId);\n  return result('calendar', '', { nome, assunto, displayDate, startISO: start.toISOString(), endISO: end.toISOString(), eventId, eventTitle: 'Consulta — ' + assunto, eventDescription: 'Nome: ' + nome + '\\nAssunto: ' + assunto + '\\nDuração: 30 minutos' });\n}\nconst summary = 'Resumo do agendamento:\\nNome: ' + nome + '\\nAssunto: ' + assunto + '\\nData e hora: ' + displayDate + '\\nDuração: 30 minutos.\\n\\nPosso consultar a disponibilidade e criar o evento privado? Responda “sim” ou diga o que deseja alterar. A agenda ainda não foi consultada.';\nreturn pending(summary, Date.now());"
+        "jsCode": "const original = $('Entrada do workflow principal').item.json ?? {};\nconst text = String(original.contentText ?? '').trim();\nconst raw = $json.output ?? $json;\nconst parsed = raw && typeof raw === 'object' ? raw : {};\nconst clean = value => typeof value === 'string' && value.trim() ? value.trim() : null;\n\nlet nome = clean(parsed.nome);\nlet assunto = clean(parsed.assunto);\nlet data = clean(parsed.data);\nlet hora = clean(parsed.hora);\nconst sessionKey = String(original.appSessionKey ?? '');\n\nlet oldState = null;\ntry {\n  const value = $('Redis — ler confirmação').item.json.pendingState;\n  oldState = typeof value === 'string' ? JSON.parse(value) : (value && typeof value === 'object' ? value : null);\n} catch { oldState = null; }\n\nconst stateAge = oldState ? Date.now() - Number(oldState.summaryAt ?? 0) : Number.POSITIVE_INFINITY;\nconst sameSession = Boolean(oldState && oldState.sessionKey === sessionKey);\nconst norm = value => String(value ?? '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/[.!?,;]+/g, ' ').replace(/\\s+/g, ' ').trim();\nconst isAffirmative = /^(sim|confirmo|isso mesmo|pode agendar|pode marcar|esta certo|tudo certo|correto|confirmado|pode fechar)$/.test(norm(text));\nconst affirmative = Boolean(isAffirmative && sameSession && stateAge >= 0 && stateAge <= 120 * 60 * 1000);\n\nif (affirmative && oldState) {\n  if (!nome && oldState.nome) nome = oldState.nome;\n  if (!assunto && oldState.assunto) assunto = oldState.assunto;\n  if (!data && oldState.data) data = oldState.data;\n  if (!hora && oldState.hora) hora = oldState.hora;\n} else if (sameSession && oldState) {\n  if (!nome && oldState.nome) nome = oldState.nome;\n  if (!assunto && oldState.assunto) assunto = oldState.assunto;\n}\n\nfunction result(action, output, extra = {}) { return { json: { ...original, action, output, ...extra } }; }\nfunction needInfo(output) { return result('need_info', output, { pendingState: JSON.stringify({ sessionKey, summaryAt: 0, nome, assunto }) }); }\n\nif (/^\\/cancelar$/i.test(text)) {\n  return needInfo('Solicitação de agendamento cancelada. Nenhum evento foi consultado ou criado.');\n}\n\nif (nome && nome.length > 120) nome = null;\nif (assunto && assunto.length > 240) assunto = null;\n\nlet dateParts = null;\nif (data) {\n  let m = data.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);\n  if (m) dateParts = { day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };\n  else {\n    m = data.match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);\n    if (m) dateParts = { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };\n  }\n  if (!dateParts) data = null;\n}\n\nlet timeParts = null;\nif (hora) {\n  const m = hora.match(/^([01]\\d|2[0-3]):([0-5]\\d)$/);\n  if (m) timeParts = { hour: Number(m[1]), minute: Number(m[2]) };\n  else hora = null;\n}\n\nif (dateParts) {\n  const d = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day));\n  if (d.getUTCFullYear() !== dateParts.year || d.getUTCMonth() !== dateParts.month - 1 || d.getUTCDate() !== dateParts.day) {\n    data = null;\n    dateParts = null;\n  }\n}\n\nif (!nome || !assunto || !data || !hora || !dateParts || !timeParts) {\n  const missing = [];\n  if (!nome) missing.push('seu nome');\n  if (!assunto) missing.push('o motivo da consulta');\n  if (!data) missing.push('a data (pode dizer, por exemplo, “amanhã”)');\n  if (!hora) missing.push('o horário');\n  return needInfo('Vamos agendar uma consulta de 30 minutos. Para continuar, informe ' + missing.join(', ') + '. Ainda não consultei a agenda.');\n}\n\nconst start = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day, timeParts.hour + 3, timeParts.minute));\nif (!Number.isFinite(start.getTime()) || start.getTime() <= Date.now()) {\n  return needInfo('Essa data e horário já passaram ou não são válidos. Informe uma data e hora futuras no horário de São Paulo.');\n}\n\nconst end = new Date(start.getTime() + 30 * 60 * 1000);\nconst dayText = String(dateParts.day).padStart(2, '0') + '/' + String(dateParts.month).padStart(2, '0') + '/' + dateParts.year;\nconst timeText = String(timeParts.hour).padStart(2, '0') + ':' + String(timeParts.minute).padStart(2, '0');\nconst displayDate = dayText + ' às ' + timeText + ' (horário de São Paulo)';\n\nconst digits = value => String(value).replace(/\\D/g, '');\nconst eventId = 'agenda' + digits(original.conversationId) + 'm' + digits(original.messageId);\nconst eventTitle = 'Consulta — ' + assunto;\nconst eventDescription = 'Nome: ' + nome + '\\nAssunto: ' + assunto + '\\nDuração: 30 minutos';\n\nconst pendingState = {\n  sessionKey,\n  summaryAt: affirmative ? 0 : Date.now(),\n  nome,\n  assunto,\n  data,\n  hora,\n  displayDate,\n  startISO: start.toISOString(),\n  endISO: end.toISOString()\n};\n\nreturn {\n  json: {\n    ...original,\n    action: 'check_availability',\n    affirmative,\n    nome,\n    assunto,\n    data,\n    hora,\n    displayDate,\n    startISO: start.toISOString(),\n    endISO: end.toISOString(),\n    eventId,\n    eventTitle,\n    eventDescription,\n    pendingState: JSON.stringify(pendingState)\n  }\n};"
       },
       "id": "5c112a30-21ec-4590-8695-b267dfe6bb36",
       "name": "Interpretar /agenda",
@@ -69,7 +69,7 @@
                 "type": "string",
                 "operation": "equals"
               },
-              "rightValue": "pending"
+              "rightValue": "check_availability"
             }
           ],
           "combinator": "and"
@@ -81,7 +81,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1504,
+        1500,
         0
       ]
     },
@@ -89,14 +89,14 @@
       "parameters": {
         "operation": "set",
         "key": "={{ 'n8n:demo:agenda:summary:' + $('Entrada do workflow principal').item.json.conversationId }}",
-        "value": "={{ $(\"Interpretar /agenda\").item.json.pendingState }}"
+        "value": "={{ $('Interpretar /agenda').item.json.pendingState }}"
       },
       "id": "a77b5474-1b50-4c55-a63b-4a60a85695f8",
       "name": "Redis — salvar confirmação",
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
       "position": [
-        1808,
+        2700,
         -240
       ],
       "credentials": {
@@ -109,14 +109,14 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "return { json: { output: $('Interpretar /agenda').item.json.output } };"
+        "jsCode": "const command = $('Interpretar /agenda').item.json;\nconst summary = 'Resumo do agendamento:\\nNome: ' + command.nome + '\\nAssunto: ' + command.assunto + '\\nData e hora: ' + command.displayDate + '\\nDuração: 30 minutos.\\n\\nO horário está disponível na agenda! Posso confirmar e criar o evento privado? Responda “sim” ou diga o que deseja alterar.';\nreturn { json: { output: summary } };"
       },
       "id": "e49a93a8-2a29-441c-a9d6-36b12581f315",
       "name": "Responder resumo da agenda",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2112,
+        3000,
         -240
       ]
     },
@@ -131,12 +131,12 @@
           },
           "conditions": [
             {
-              "leftValue": "={{ $json.action }}",
+              "leftValue": "={{ $('Interpretar /agenda').item.json.affirmative }}",
               "operator": {
-                "type": "string",
+                "type": "boolean",
                 "operation": "equals"
               },
-              "rightValue": "calendar"
+              "rightValue": true
             }
           ],
           "combinator": "and"
@@ -148,8 +148,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1808,
-        128
+        2400,
+        0
       ]
     },
     {
@@ -177,8 +177,8 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        2112,
-        128
+        1800,
+        0
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
@@ -217,8 +217,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        2400,
-        128
+        2100,
+        0
       ]
     },
     {
@@ -249,7 +249,7 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        2704,
+        2700,
         128
       ],
       "credentials": {
@@ -270,7 +270,7 @@
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
       "position": [
-        3008,
+        3000,
         128
       ],
       "credentials": {
@@ -338,7 +338,7 @@
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
       "position": [
-        2704,
+        2400,
         480
       ],
       "credentials": {
@@ -351,14 +351,14 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const command = $('Interpretar /agenda').item.json; return { json: { output: 'O horário ' + command.displayDate + ' está ocupado. Não criei o evento. Diga outro dia ou horário para eu atualizar o resumo.' } };"
+        "jsCode": "const command = $('Interpretar /agenda').item.json;\nif (command.affirmative) {\n  return { json: { output: 'O horário ' + command.displayDate + ' está ocupado. Não criei o evento. Diga outro dia ou horário para eu atualizar o resumo.' } };\n}\nreturn { json: { output: 'O horário ' + command.displayDate + ' não está disponível na agenda. Por favor, informe outra data ou horário para agendarmos sua consulta sobre ' + command.assunto + '.' } };"
       },
       "id": "17b51f2a-b7d8-480e-8023-ac7f4abfcf1d",
       "name": "Resposta horário ocupado",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3008,
+        2700,
         480
       ]
     },
@@ -372,7 +372,7 @@
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
       "position": [
-        1808,
+        1800,
         480
       ],
       "credentials": {
@@ -392,7 +392,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2112,
+        2100,
         480
       ]
     },
@@ -505,7 +505,7 @@
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
       "position": [
-        3312,
+        3300,
         128
       ],
       "credentials": {
@@ -602,14 +602,14 @@
       "main": [
         [
           {
-            "node": "Redis — salvar confirmação",
+            "node": "Calendar — verificar disponibilidade",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Confirmado e válido?",
+            "node": "Redis — limpar solicitação inválida",
             "type": "main",
             "index": 0
           }
@@ -631,14 +631,14 @@
       "main": [
         [
           {
-            "node": "Calendar — verificar disponibilidade",
+            "node": "Calendar — criar agendamento",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Redis — limpar solicitação inválida",
+            "node": "Redis — salvar confirmação",
             "type": "main",
             "index": 0
           }
@@ -667,7 +667,7 @@
       "main": [
         [
           {
-            "node": "Calendar — criar agendamento",
+            "node": "Confirmado e válido?",
             "type": "main",
             "index": 0
           }

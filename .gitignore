@@ -37,3 +37,4 @@ __pycache__/
 *.tmp
 *.log
 .setup-outputs/
+scratch/

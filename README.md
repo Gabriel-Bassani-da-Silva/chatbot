@@ -62,6 +62,7 @@ O arquivo `.env` contém credenciais e nunca deve ser versionado. Siga as etapas
 
 ## Documentação Complementar
 
-- [Transcrição local de áudio com Speaches](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/transcricao-audio-speaches.md)
+- [Guia Ilustrado — Transcrição de Áudio com Speaches](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/speaches/Guia%20ilustrado%20%E2%80%94%20transcri%C3%A7%C3%A3o%20de%20%C3%A1udio%20com%20Speaches.md)
 - [Guia Ilustrado — Rotas do Cloudflare Tunnel](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/cloudflare/Guia%20ilustrado%20%E2%80%94%20rotas%20do%20Cloudflare%20Tunnel.md)
+- [Guia Ilustrado — Conexão com Google Sheets, Calendar e Drive](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/google/Guia%20ilustrado%20%E2%80%94%20conex%C3%A3o%20com%20Google%20Sheets,%20Calendar%20e%20Drive.md)
 - [Guia de Credenciais dos Workflows n8n](https://github.com/Gabriel-Bassani-da-Silva/chatbot/blob/main/docs/credenciais-workflows-n8n.md)

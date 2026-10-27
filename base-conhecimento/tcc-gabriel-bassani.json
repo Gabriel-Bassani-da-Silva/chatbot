@@ -1,0 +1,64 @@
+{
+  "categoria": "tcc_e_projetos",
+  "titulo": "TCC de Gabriel Bassani da Silva — Plataforma de Assistente Virtual Multimodal com RAG",
+  "curso": "Big Data no Agronegócio",
+  "fonte": "Fatec Bebedouro — Jorge Caram Sabbag",
+  "resumo": "O Trabalho de Conclusão de Curso (TCC) de Gabriel Bassani da Silva, aluno do curso superior de tecnologia em Big Data no Agronegócio da Fatec Bebedouro — Jorge Caram Sabbag, consiste no desenvolvimento de uma Plataforma de Assistente Virtual Multimodal com Arquitetura RAG (Retrieval-Augmented Generation) Local, Transcrição de Áudio por GPU e Orquestração Multi-Agente. O sistema foi concebido para atender alunos, vestibulandos e a comunidade 24 horas por dia, 7 dias por semana (24/7) via WhatsApp, com privacidade total dos dados através de modelos de inteligência artificial executados localmente (Ollama Llama 3.1, Qwen3-Embedding e Speaches Whisper via CUDA), sem envio de informações para nuvens de terceiros.",
+  "dados_estruturados": {
+    "identificacao_do_autor_e_projeto": {
+      "autor": "Gabriel Bassani da Silva",
+      "curso": "Curso Superior de Tecnologia em Big Data no Agronegócio",
+      "instituicao": "Faculdade de Tecnologia de Bebedouro — Fatec Jorge Caram Sabbag",
+      "titulo_do_tcc": "Plataforma de Assistente Virtual Multimodal com Arquitetura RAG Local, Transcrição de Áudio por GPU e Orquestração Multi-Agente",
+      "orientacao_e_proposito": "Projeto de graduação focado em modernização de serviços públicos educacionais, IA generativa soberana e inclusão por mensagens de voz no WhatsApp.",
+      "repositorio_oficial": "https://github.com/Gabriel-Bassani-da-Silva/chatbot"
+    },
+    "arquitetura_e_componentes_tecnologicos": {
+      "whatsapp_e_waha": "Gateway WAHA (WhatsApp HTTP API) conectado ao WhatsApp oficial da Fatec Bebedouro. Gerencia envio e recebimento em tempo real de mensagens de texto e áudios via webhooks.",
+      "chatwoot_omnichannel": "Central omnichannel de mensagens e atendimento ao cliente. Gerencia conversas, armazena histórico de mensagens, atua com AgentBot autônomo e suporta transbordo para atendentes humanos.",
+      "n8n_orquestrador_de_workflows": "Motor de orquestração de fluxos de trabalho e agentes LangChain. Controla a lógica de roteamento condicional, normalização de entradas, integração com Google Calendar, Drive e Sheets, e automação de respostas.",
+      "ollama_llm_e_embeddings": "Servidor de inteligência artificial executado localmente. Utiliza o modelo Llama 3.1 8B para raciocínio, entendimento de contexto e geração de respostas em linguagem natural, e o modelo Qwen3-Embedding (0.6B com 1024 dimensões) para busca semântica vetorial.",
+      "postgresql_e_pgvector": "Banco de dados relacional e vetorial de alta performance com índice HNSW (Hierarchical Navigable Small World) e cálculo de similaridade por cosseno em milissegundos para recuperação precisa de documentos institucionais.",
+      "redis_sessoes_e_deduplicacao": "Camada de armazenamento em memória ultrarrápida. Controla memória conversacional do agente, isolamento de contexto entre modos (/fatec, /cardapio, /agenda) e deduplicação atômica de mensagens.",
+      "speaches_transcricao_de_audio_gpu": "Serviço Speech-to-Text baseado em faster-whisper acelerado por GPU NVIDIA via CUDA em precisão FP16. Converte áudios do WhatsApp de até 60 segundos em texto com alta acurácia e baixa latência sem custos por API na nuvem.",
+      "caddy_e_cloudflare_tunnel": "Infraestrutura de proxy reverso e tunelamento seguro criptografado com SSL automático, viabilizando acesso público seguro sem necessidade de liberação de portas em roteadores locais."
+    },
+    "modos_de_atendimento_do_sistema": {
+      "modo_fatec_rag": "Modo principal do assistente (/fatec ou padrão quando não há comando). Responde dúvidas da Secretaria Acadêmica sobre vestibular, matrículas, cursos (Big Data e Logística), estágio supervisionado, convalidação, TCC da faculdade e horários com base factual estrita recuperada via RAG.",
+      "modo_cardapio_pedidos": "Ativado pelo comando /cardapio. Demonstração interativa de atendimento comercial que calcula pedidos, solicita o nome do cliente e a forma de pagamento, grava o pedido em planilha Google Sheets e fornece uma explicação detalhada sobre o TCC no encerramento.",
+      "modo_agenda_agendamentos": "Ativado pelo comando /agenda. Sistema autônomo de agendamento de consultas e horários com verificação de conflitos e criação de eventos no Google Calendar.",
+      "comando_cancelar": "Ativado pelo comando /cancelar. Zera imediatamente o contexto e histórico recente da conversa, cancela ações pendentes e retorna o assistente ao estado inicial neutro."
+    },
+    "privacidade_soberania_e_disponibilidade": {
+      "soberania_e_privacidade_total": "Todos os dados de alunos, conversas, transcrições e raciocínio de IA ocorrem exclusivamente na infraestrutura local do servidor, sem transmissão para servidores terceirizados (como OpenAI ou Google).",
+      "disponibilidade_ininterrupta": "O assistente opera 24 horas por dia, 7 dias por semana (24/7), garantindo respostas imediatas fora do horário comercial convencional.",
+      "resiliencia_e_deduplicacao_atomica": "Uso de operações atômicas em Redis para garantir que nenhuma mensagem seja processada em duplicidade, mesmo diante de disparos concorrentes de webhooks."
+    }
+  },
+  "perguntas_frequentes": [
+    {
+      "pergunta": "Como o TCC do Gabriel funciona?",
+      "resposta": "O TCC de Gabriel Bassani da Silva é esta plataforma integrada de assistente virtual inteligente multimodal. Ele recebe mensagens de texto ou notas de voz pelo WhatsApp via WAHA e Chatwoot. Se a mensagem for áudio, ela é transcrita localmente pelo Speaches AI (faster-whisper) acelerado por GPU NVIDIA CUDA. O n8n então processa a mensagem e a encaminha ao agente de IA com modelo Llama 3.1 8B via Ollama. Para responder a dúvidas institucionais da Fatec Bebedouro, o sistema utiliza a arquitetura RAG (Retrieval-Augmented Generation), buscando trechos oficiais em um banco PostgreSQL com PGVector usando embeddings Qwen3 (1024 dimensões). O assistente conta ainda com controle de sessões e deduplicação via Redis e suporta múltiplos modos de operação (/fatec, /cardapio e /agenda)."
+    },
+    {
+      "pergunta": "Qual é o tema e objetivo do TCC do Gabriel?",
+      "resposta": "O tema do TCC de Gabriel Bassani da Silva é 'Plataforma de Assistente Virtual Multimodal com Arquitetura RAG Local, Transcrição de Áudio por GPU e Orquestração Multi-Agente', desenvolvido para a Fatec Bebedouro. O objetivo é fornecer atendimento 24/7 automatizado, humanizado e acessível por texto e áudio no WhatsApp para a Secretaria Acadêmica e serviços integrados, com total soberania e privacidade de dados locais."
+    },
+    {
+      "pergunta": "Quem é o autor e desenvolvedor deste chatbot?",
+      "resposta": "O autor e desenvolvedor do projeto é Gabriel Bassani da Silva, aluno do curso superior de tecnologia em Big Data no Agronegócio da Fatec Bebedouro — Jorge Caram Sabbag."
+    },
+    {
+      "pergunta": "Quais tecnologias o Gabriel utilizou no TCC?",
+      "resposta": "O Gabriel utilizou Docker, WhatsApp (WAHA), Chatwoot (omnichannel e AgentBot), n8n (orquestrador de workflows e agentes LangChain), Ollama (LLM Llama 3.1 e embeddings Qwen3), PostgreSQL com PGVector (banco vetorial com índice HNSW), Redis (memória, contexto e deduplicação atômica), Speaches (Whisper com CUDA FP16 em GPU), Caddy, Cloudflare Tunnel e APIs do Google (Sheets, Calendar e Drive)."
+    },
+    {
+      "pergunta": "Como o assistente do TCC do Gabriel transcreve mensagens de voz?",
+      "resposta": "Quando um usuário envia um áudio no WhatsApp, o arquivo é recebido pelo Chatwoot e n8n, validado (áudio de até 60 segundos e 10 MiB) e encaminhado ao container do Speaches AI. O Speaches executa o faster-whisper diretamente na placa de vídeo NVIDIA via CUDA FP16, convertendo a fala em texto em poucos milissegundos antes de enviá-lo ao LLM para resposta."
+    },
+    {
+      "pergunta": "Qual a diferença entre o TCC do Gabriel e o TCC da Fatec?",
+      "resposta": "O TCC do Gabriel é o projeto de graduação específico desenvolvido por Gabriel Bassani da Silva (a criação desta plataforma de assistente virtual inteligente multimodal para a Fatec Bebedouro). Já o 'TCC da Fatec' em geral refere-se aos procedimentos acadêmicos, prazos, modelos de monografia ou artigo e tutorial de autorização e entrega da faculdade para todos os alunos."
+    }
+  ]
+}

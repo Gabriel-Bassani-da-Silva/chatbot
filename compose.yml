@@ -144,7 +144,10 @@ services:
       GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-America/Sao_Paulo}
       TZ: ${TZ:-America/Sao_Paulo}
       NODE_FUNCTION_ALLOW_BUILTIN: ${NODE_FUNCTION_ALLOW_BUILTIN:-crypto,buffer,util}
-      NODE_FUNCTION_ALLOW_EXTERNAL: ${NODE_FUNCTION_ALLOW_EXTERNAL:-}
+      NODE_FUNCTION_ALLOW_EXTERNAL: ${NODE_FUNCTION_ALLOW_EXTERNAL:-ioredis}
+      NODE_PATH: /usr/local/lib/node_modules/n8n/node_modules
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
       # Conserva execução com erro e poda execuções antigas/bem-sucedidas.
       EXECUTIONS_DATA_PRUNE: ${EXECUTIONS_DATA_PRUNE:-true}
       EXECUTIONS_DATA_MAX_AGE: ${EXECUTIONS_DATA_MAX_AGE:-168}
@@ -171,12 +174,11 @@ services:
       - WHISPER__INFERENCE_DEVICE=cuda
       - WHISPER__COMPUTE_TYPE=float16
       # Os nomes cobrem Speaches 0.8.x (WHISPER__TTL) e versões 0.9+ (STT_MODEL_TTL).
-      # -1 mantém o modelo em VRAM depois do primeiro uso; não faz preload.
-      - STT_MODEL_TTL=-1
-      - WHISPER__TTL=-1
-      # PRELOAD_MODELS: Opcional. O Speaches encerra a inicialização (exit) se o modelo falhar
-      # ao baixar ou se houver oscilação de rede no boot. Mantido comentado por resiliência:
-      # - PRELOAD_MODELS='["Systran/faster-whisper-medium"]'
+      # 300 segundos (5 min) descarrega o modelo da VRAM após inatividade.
+      - STT_MODEL_TTL=300
+      - WHISPER__TTL=300
+      # PRELOAD_MODELS: Opcional. Mantido comentado por resiliência:
+      # - PRELOAD_MODELS='["Systran/faster-whisper-small"]'
     healthcheck:
       test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
       interval: 30s

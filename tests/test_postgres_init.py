@@ -34,6 +34,17 @@ class PostgresInitTests(unittest.TestCase):
             postgres_service,
         )
 
+    def test_n8n_database_initializes_rag_vector_tables(self):
+        sql = (ROOT / "postgres-init.sql").read_text(encoding="utf-8")
+        self.assertIn(r"\c n8n", sql)
+        self.assertIn("CREATE EXTENSION IF NOT EXISTS vector;", sql)
+        self.assertIn("CREATE TABLE IF NOT EXISTS fatec_rag_collections_poc", sql)
+        self.assertIn("CREATE TABLE IF NOT EXISTS fatec_rag_vectors_poc", sql)
+        self.assertIn("text text", sql)
+        self.assertIn("metadata jsonb", sql)
+        self.assertIn("idx_fatec_vectors_cosine", sql)
+
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,20 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Diretora da Unidade",
+    "fonte": "https://fatecbb.cps.sp.gov.br/diretora-da-unidade/",
+    "resumo": "Profa. Dra. Carla Lanzotti",
+    "dados_estruturados": {
+        "imagem": "https://bkpsitecpsnew.blob.core.windows.net/uploadsitecps/sites/204/2024/05/FotoCarla.jpg",
+        "email": "carla.lanzotti@fatecbb.edu.br"
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Quem é a diretora da Fatec Bebedouro?",
+            "resposta": "A diretora da unidade é a Profa. Dra. Carla Regina Lanzotti."
+        },
+        {
+            "pergunta": "Qual o e-mail da diretora da Fatec Bebedouro?",
+            "resposta": "carla.lanzotti@fatecbb.edu.br"
+        }
+    ]
+}

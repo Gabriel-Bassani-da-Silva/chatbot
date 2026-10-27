@@ -1,0 +1,473 @@
+{
+  "id": "gdrive_rag_sync1",
+  "name": "Sincronizacao RAG - Google Drive para PGVector",
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-gdrive",
+      "name": "Disparo Manual - Sincronizar Google Drive",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sincronizar-gdrive",
+        "options": {
+          "responseMode": "onReceived"
+        }
+      },
+      "id": "webhook-trigger-gdrive",
+      "name": "Webhook - Sincronizar Google Drive",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        400
+      ],
+      "webhookId": "sync-gdrive-pgvector-001"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "operation": "search",
+        "queryString": "'1AtN4X4jp5okt8ChlwRmYMpI4XwQuurF0' in parents and trashed = false",
+        "options": {}
+      },
+      "id": "gdrive-list-files",
+      "name": "Google Drive - Listar Arquivos da Pasta",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        520,
+        300
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zEFeidm3PGLdb0x5",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ String($json.name || '').toLowerCase().endsWith('.json') }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-json-files",
+      "name": "Filtrar apenas arquivos JSON",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        760,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "gdrive-download-file",
+      "name": "Google Drive - Baixar arquivo JSON",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1000,
+        300
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zEFeidm3PGLdb0x5",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT content_hash, vector_count FROM fatec_rag_documents WHERE file_name = '{{ $('Filtrar apenas arquivos JSON').item.json.name }}';",
+        "options": {}
+      },
+      "id": "postgres-check-hash",
+      "name": "Postgres - Buscar Hash Atual do Banco",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1240,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "WXVjpdoSEtoJGCvg",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nconst prev = $('Google Drive - Baixar arquivo JSON').item;\nconst fileMeta = $('Filtrar apenas arquivos JSON').item.json;\nconst dbMeta = $input.item.json || {};\n\nlet rawStr = '';\nlet content = null;\n\nif (prev.binary && prev.binary.data) {\n  const buf = Buffer.from(prev.binary.data.data, 'base64');\n  rawStr = buf.toString('utf-8');\n  try { content = JSON.parse(rawStr); } catch (e) {}\n} else if (typeof prev.json === 'object') {\n  content = prev.json;\n  rawStr = JSON.stringify(content);\n}\n\nif (!content) {\n  return { json: { should_skip: true, reason: 'empty_or_invalid_json', fileName: fileMeta.name } };\n}\n\nconst crypto = require('crypto');\nconst downloadedHash = crypto.createHash('sha256').update(rawStr).digest('hex');\nconst dbHash = String(dbMeta.content_hash || '');\nconst vectorCount = parseInt(dbMeta.vector_count || 0, 10);\n\n// PROTECAO CONTRA DUPLICACAO:\n// Se o hash do arquivo no GDrive for identico ao hash no Postgres e ja possuir vetores (>0), PULA!\nif (dbHash && dbHash === downloadedHash && vectorCount > 0) {\n  return {\n    json: {\n      should_skip: true,\n      fileName: fileMeta.name,\n      fileId: fileMeta.id,\n      reason: 'hash_identical_no_change',\n      vectorCount\n    }\n  };\n}\n\nconst fileName = fileMeta.name;\nconst fileId = fileMeta.id;\nconst firstItem = Array.isArray(content) ? content[0] : content;\nconst categoria = firstItem.categoria || 'geral';\nconst titulo = firstItem.titulo || fileName;\nconst rawJsonSql = JSON.stringify(content).replace(/'/g, \"''\");\n\nreturn {\n  json: {\n    should_skip: false,\n    fileName,\n    fileId,\n    categoria,\n    titulo,\n    contentHash: downloadedHash,\n    rawJsonSql,\n    content\n  }\n};\n"
+      },
+      "id": "code-check-duplication",
+      "name": "Code - Verificar Mudanca e Hash",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.should_skip }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              },
+              "rightValue": true
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-should-update",
+      "name": "If - Atualizar Documento?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1720,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO fatec_rag_documents (file_name, file_id_gdrive, content_hash, raw_json, categoria, titulo, updated_at)\nVALUES (\n  '{{ $json.fileName }}',\n  '{{ $json.fileId }}',\n  '{{ $json.contentHash }}',\n  '{{ $json.rawJsonSql }}'::jsonb,\n  '{{ $json.categoria }}',\n  '{{ $json.titulo }}',\n  NOW()\n)\nON CONFLICT (file_name) DO UPDATE SET\n  file_id_gdrive = EXCLUDED.file_id_gdrive,\n  content_hash = EXCLUDED.content_hash,\n  raw_json = EXCLUDED.raw_json,\n  categoria = EXCLUDED.categoria,\n  titulo = EXCLUDED.titulo,\n  updated_at = NOW();\n\nDELETE FROM fatec_rag_vectors_poc \nWHERE metadata->>'file' = '{{ $json.fileName }}' \n   OR metadata->>'file_name' = '{{ $json.fileName }}' \n   OR cmetadata->>'file' = '{{ $json.fileName }}' \n   OR cmetadata->>'file_name' = '{{ $json.fileName }}' \n   OR cmetadata->>'file_id' = '{{ $json.fileId }}';",
+        "options": {}
+      },
+      "id": "postgres-save-json-clean-vectors",
+      "name": "Postgres - Salvar JSON Puro e Limpar Vetores",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1960,
+        200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "WXVjpdoSEtoJGCvg",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT n->'parameters'->>'model' AS active_model FROM workflow_entity w, LATERAL json_array_elements(w.nodes) AS n WHERE w.id = 'vKrMSyZ4jMDtbjW7' AND n->>'type' = '@n8n/n8n-nodes-langchain.embeddingsOllama' LIMIT 1;",
+        "options": {}
+      },
+      "id": "postgres-get-active-model",
+      "name": "Postgres - Obter Modelo Ativo do RAG",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2200,
+        200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "WXVjpdoSEtoJGCvg",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "function toNaturalText(val, indent = 0) {\n  const prefix = \"  \".repeat(indent);\n  if (typeof val === 'string') return prefix + val.trim();\n  if (typeof val === 'number' || typeof val === 'boolean') return prefix + String(val);\n  if (val && typeof val === 'object' && !Array.isArray(val)) {\n    const lines = [];\n    if (val.description) lines.push(prefix + String(val.description).trim());\n    for (const [k, v] of Object.entries(val)) {\n      if (['description', 'type', '$schema'].includes(k.toLowerCase())) continue;\n      const kClean = k.replace(/_/g, ' ').trim();\n      const capKey = kClean.charAt(0).toUpperCase() + kClean.slice(1);\n      if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {\n        lines.push(`${prefix}• ${capKey}: ${v}`);\n      } else {\n        lines.push(`${prefix}• ${capKey}:`);\n        const sub = toNaturalText(v, indent + 1);\n        if (sub) lines.push(sub);\n      }\n    }\n    return lines.join('\\n');\n  }\n  if (Array.isArray(val)) {\n    const lines = [];\n    for (const item of val) {\n      if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') {\n        lines.push(`${prefix}• ${item}`);\n      } else {\n        const sub = toNaturalText(item, indent + 1);\n        if (sub) {\n          lines.push(`${prefix}•`);\n          lines.push(sub);\n        }\n      }\n    }\n    return lines.join('\\n');\n  }\n  return '';\n}\n\nconst docInfo = $('Code - Verificar Mudanca e Hash').item.json;\nconst activeModel = $('Postgres - Obter Modelo Ativo do RAG').item.json.active_model || 'qwen3-embedding:0.6b';\nconst content = docInfo.content;\nconst fileName = docInfo.fileName;\nconst fileId = docInfo.fileId;\nconst categoria = docInfo.categoria;\nconst titulo = docInfo.titulo;\nconst fonte = content.fonte || 'Fatec Bebedouro';\nconst resumo = content.resumo || '';\n\nconst chunks = [];\nlet chunkIdx = 0;\n\nif (resumo) {\n  const headerText = `DOCUMENTO: ${titulo}\\nCATEGORIA: ${categoria}\\nFONTE: ${fonte}\\n\\nRESUMO INSTITUCIONAL:\\n${resumo}`;\n  chunks.push({\n    fileName,\n    fileId,\n    activeModel,\n    chunkIndex: chunkIdx++,\n    chunkType: 'resumo',\n    chunkText: headerText,\n    metadata: {\n      file: fileName,\n      file_name: fileName,\n      file_id: fileId,\n      source: fileName,\n      categoria,\n      titulo,\n      fonte,\n      chunk_index: chunkIdx - 1,\n      chunk_type: 'resumo',\n      model: activeModel\n    }\n  });\n}\n\nif (content.dados_estruturados && typeof content.dados_estruturados === 'object') {\n  for (const [secao, dados] of Object.entries(content.dados_estruturados)) {\n    const textoSecao = toNaturalText(dados);\n    if (!textoSecao) continue;\n    const chunkText = `DOCUMENTO: ${titulo}\\nTÓPICO / SEÇÃO: ${secao}\\nFONTE: ${fonte}\\n\\nINFORMAÇÕES OFICIAIS:\\n${textoSecao}`;\n    chunks.push({\n      fileName,\n      fileId,\n      activeModel,\n      chunkIndex: chunkIdx++,\n      chunkType: 'secao_' + secao,\n      chunkText,\n      metadata: {\n        file: fileName,\n        file_name: fileName,\n        file_id: fileId,\n        source: fileName,\n        categoria,\n        titulo,\n        fonte,\n        secao,\n        chunk_index: chunkIdx - 1,\n        chunk_type: 'secao',\n        model: activeModel\n      }\n    });\n  }\n}\n\nfor (const extraKey of ['Informações Adicionais', 'estagio', 'total_de_aulas', 'fonte_detalhe_eixos']) {\n  if (content[extraKey]) {\n    const textoExtra = toNaturalText(content[extraKey]);\n    if (!textoExtra) continue;\n    const chunkText = `DOCUMENTO: ${titulo}\\nTÓPICO / SEÇÃO: ${extraKey}\\nFONTE: ${fonte}\\n\\nINFORMAÇÕES OFICIAIS:\\n${textoExtra}`;\n    chunks.push({\n      fileName,\n      fileId,\n      activeModel,\n      chunkIndex: chunkIdx++,\n      chunkType: 'extra_' + extraKey,\n      chunkText,\n      metadata: {\n        file: fileName,\n        file_name: fileName,\n        file_id: fileId,\n        source: fileName,\n        categoria,\n        titulo,\n        fonte,\n        secao: extraKey,\n        chunk_index: chunkIdx - 1,\n        chunk_type: 'extra',\n        model: activeModel\n      }\n    });\n  }\n}\n\nif (Array.isArray(content.perguntas_frequentes)) {\n  for (const faq of content.perguntas_frequentes) {\n    const pergunta = faq.pergunta || '';\n    const resposta = faq.resposta || '';\n    const tags = Array.isArray(faq.palavras_chave) ? faq.palavras_chave.join(', ') : '';\n    const chunkText = `DOCUMENTO: ${titulo}\\nCATEGORIA: ${categoria}\\nPERGUNTA FREQUENTE: ${pergunta}\\nRESPOSTA OFICIAL: ${resposta}${tags ? '\\nPALAVRAS-CHAVE: ' + tags : ''}`;\n    chunks.push({\n      fileName,\n      fileId,\n      activeModel,\n      chunkIndex: chunkIdx++,\n      chunkType: 'faq',\n      chunkText,\n      metadata: {\n        file: fileName,\n        file_name: fileName,\n        file_id: fileId,\n        source: fileName,\n        categoria,\n        titulo,\n        fonte,\n        pergunta,\n        chunk_index: chunkIdx - 1,\n        chunk_type: 'faq',\n        model: activeModel\n      }\n    });\n  }\n}\n\nreturn chunks.map(c => ({ json: c }));\n"
+      },
+      "id": "slice-json-chunks",
+      "name": "Fatiar JSON em Chunks (FAQ e Docs)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11434/api/embeddings",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"{{ $json.activeModel }}\",\n  \"prompt\": {{ JSON.stringify($json.chunkText) }}\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "ollama-generate-embeddings",
+      "name": "Ollama - Gerar Embedding Dinamico",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2680,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nconst chunk = $('Fatiar JSON em Chunks (FAQ e Docs)').item.json;\nconst embRes = $json;\nconst embedding = embRes.embedding || [];\n\nconst sanitize = (txt) => String(txt || '').replace(/'/g, \"''\");\nconst metadataJson = sanitize(JSON.stringify(chunk.metadata));\nconst chunkTextSql = sanitize(chunk.chunkText);\nconst vectorStr = '[' + embedding.join(',') + ']';\n\nconst sql = `INSERT INTO fatec_rag_vectors_poc (text, metadata, document, cmetadata, embedding) VALUES ('${chunkTextSql}', '${metadataJson}'::jsonb, '${chunkTextSql}', '${metadataJson}'::jsonb, '${vectorStr}'::vector);`;\n\nreturn {\n  json: {\n    insert_sql: sql,\n    fileName: chunk.fileName,\n    chunkIndex: chunk.chunkIndex,\n    dim: embedding.length\n  }\n};\n"
+      },
+      "id": "prepare-insert-sql",
+      "name": "Preparar SQL de Insercao",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2920,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.insert_sql }}",
+        "options": {}
+      },
+      "id": "pgvector-insert-chunks",
+      "name": "PGVector - Gravar Chunks no Banco",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3160,
+        200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "WXVjpdoSEtoJGCvg",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE fatec_rag_documents SET vector_count = (SELECT count(*) FROM fatec_rag_vectors_poc WHERE metadata->>'file' = '{{ $json.fileName }}' OR metadata->>'file_name' = '{{ $json.fileName }}') WHERE file_name = '{{ $json.fileName }}';",
+        "options": {}
+      },
+      "id": "postgres-update-vector-count",
+      "name": "Postgres - Atualizar Contagem de Vetores",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        3400,
+        200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "WXVjpdoSEtoJGCvg",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Disparo Manual - Sincronizar Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Listar Arquivos da Pasta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Sincronizar Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Listar Arquivos da Pasta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive - Listar Arquivos da Pasta": {
+      "main": [
+        [
+          {
+            "node": "Filtrar apenas arquivos JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar apenas arquivos JSON": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Baixar arquivo JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive - Baixar arquivo JSON": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Buscar Hash Atual do Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Buscar Hash Atual do Banco": {
+      "main": [
+        [
+          {
+            "node": "Code - Verificar Mudanca e Hash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Verificar Mudanca e Hash": {
+      "main": [
+        [
+          {
+            "node": "If - Atualizar Documento?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Atualizar Documento?": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Salvar JSON Puro e Limpar Vetores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Salvar JSON Puro e Limpar Vetores": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Obter Modelo Ativo do RAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Obter Modelo Ativo do RAG": {
+      "main": [
+        [
+          {
+            "node": "Fatiar JSON em Chunks (FAQ e Docs)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fatiar JSON em Chunks (FAQ e Docs)": {
+      "main": [
+        [
+          {
+            "node": "Ollama - Gerar Embedding Dinamico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama - Gerar Embedding Dinamico": {
+      "main": [
+        [
+          {
+            "node": "Preparar SQL de Insercao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar SQL de Insercao": {
+      "main": [
+        [
+          {
+            "node": "PGVector - Gravar Chunks no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PGVector - Gravar Chunks no Banco": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Atualizar Contagem de Vetores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Biblioteca",
+    "fonte": "https://fatecbb.cps.sp.gov.br/biblioteca-2/",
+    "resumo": "A biblioteca da Fatec de Bebedouro está a serviço dos estudantes e dos docentes da faculdade. Na sua coleção estão refletidas as matérias lecionadas no curso de Logística. A documentação é de caráter científico e técnico e é permanentemente atualizada através das frequentes aquisições.",
+    "dados_estruturados": {
+        "Objetivos principais": "Apoiar o ensino e a investigação e promover o hábito de leitura dos alunos.",
+        "Informações úteis": {
+            "Para consulta online ao acervo, acesse": "https://biblio.cps.sp.gov.br/",
+            "Computadores para realização de consultas ao acervo estão disponíveis na biblioteca": "",
+            "A sala para leitura e estudos conta com mesas para estudo e um ambiente tranquilo e agradável": "",
+            "Durante o uso da sala de estudos, permaneça em silêncio, para não perturbar os demais usuários": "",
+            "Não é permitido o consumo de alimentos ou líquidos no interior da biblioteca": "Tanto na sala de arquivo quanto na sala de estudo",
+            "Não é permita a entrada com bolsas e mochilas no interior da biblioteca": "O usuário deve deixar esses materiais no armário disponibilizado para esta função",
+            "A biblioteca não é responsável por valores ou pertences deixados em suas dependências": ""
+        },
+        "Regras para empréstimos": {
+            "Empréstimos de no máximo 3 exemplares por usuário": "",
+            "Prazo máximo para devolução ou renovação é de 7 dias úteis": "",
+            "Renovação impreterivelmente com a apresentação dos exemplares e confirmação mediante a senha do usuário": "",
+            "Devolução efetuada em atraso acarretará na suspensão do direito de empréstimo em 2 dias úteis para cada dia de atraso registrado": "",
+            "Não serão aceitas solicitações de reservas, empréstimos ou renovações via ligação telefônica": "",
+            "Não serão renovados exemplares que constarem solicitação de reserva por outros usuários": "",
+            "Não são passíveis de empréstimo as seguintes categorias de materiais bibliográficos": "JORNAIS, REVISTAS, DICIONÁRIOS e material não tombado",
+            "Exemplares que possuírem uma etiqueta branca em seu dorso são de uso para consulta interna e não podem ser retirados da biblioteca": "",
+            "Em caso de PERDA, EXTRAVIO ou DANO de itens sob guarda do usuário, este deverá repor os itens integralmente": "",
+            "Os empréstimos são de total responsabilidade do usuário registrado": "",
+            "A senha do usuário é pessoal e intransferível": ""
+        },
+        "Repositório Institucional do Conhecimento – RIC-CPS": {
+            "Para acessar o repositório Institucional, clique em": "https://ric.cps.sp.gov.br/"
+        }
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Como consulto o acervo da biblioteca online?",
+            "resposta": "Acesse http://biblio.cps.sp.gov.br/. Há também computadores para consulta ao acervo na própria biblioteca."
+        },
+        {
+            "pergunta": "Quantos livros posso emprestar e por quanto tempo?",
+            "resposta": "Até 3 exemplares por usuário, com prazo máximo de 7 dias úteis para devolução ou renovação."
+        },
+        {
+            "pergunta": "Como renovo um empréstimo?",
+            "resposta": "A renovação exige a apresentação dos exemplares e a confirmação com a senha do usuário. Não são aceitos empréstimos, reservas ou renovações por telefone, e não são renovados exemplares com reserva de outro usuário."
+        },
+        {
+            "pergunta": "O que acontece se eu devolver com atraso?",
+            "resposta": "O direito de empréstimo é suspenso por 2 dias úteis para cada dia de atraso."
+        },
+        {
+            "pergunta": "Quais materiais não podem ser emprestados?",
+            "resposta": "Jornais, revistas, dicionários, material não tombado e exemplares com etiqueta branca no dorso (consulta interna)."
+        },
+        {
+            "pergunta": "Posso entrar com bolsa ou comer na biblioteca?",
+            "resposta": "Não. É preciso deixar bolsas e mochilas no armário disponibilizado e não é permitido consumir alimentos ou líquidos, nem na sala de arquivo nem na de estudo. Mantenha silêncio na sala de estudos. A biblioteca não se responsabiliza por pertences deixados."
+        },
+        {
+            "pergunta": "O que acontece se eu perder ou danificar um livro?",
+            "resposta": "Em caso de perda, extravio ou dano, o usuário deve repor os itens integralmente."
+        },
+        {
+            "pergunta": "O que é o RIC-CPS?",
+            "resposta": "É o Repositório Institucional do Conhecimento do Centro Paula Souza: https://ric.cps.sp.gov.br/"
+        }
+    ]
+}

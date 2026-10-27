@@ -1,0 +1,80 @@
+{
+    "categoria": "pessoas_e_orgaos",
+    "titulo": "Big Data no Agronegócio",
+    "fonte": "https://fatecbb.cps.sp.gov.br/big-data-no-agronegocio/",
+    "resumo": "O curso de Big Data no Agronegócio da Fatec Bebedouro oferece formação em desenvolvimento de software e soluções de sistemas de informação aplicados na resolução de problemas no contexto do Agronegócio.",
+    "dados_estruturados": {
+        "Área do aluno": {
+            "TCC": "https://fatecbb.cps.sp.gov.br/tcc-big-data-no-agronegocio/",
+            "Estágio": "https://fatecbb.cps.sp.gov.br/estagio-big-data-no-agronegocio/"
+        },
+        "Prazos importantes": {
+            "Prazo final para entrega das 3 cópias do TCC": "19 de novembro de 2026",
+            "Prazo máximo de entrega dos documentos de estágio": "27 de novembro de 2026",
+            "Entrega do anteprojeto do trabalho de conclusão de curso": "23 de novembro de 2026",
+            "Período de apresentação do trabalho de conclusão de curso": "De 07 a 11 de dezembro de 2026"
+        },
+        "O que o aluno de Big Data no Agronegócio estuda?": {
+            "O que o aluno de Big Data no Agronegócio estuda?": "O estudante de Big Data no Agronegócio da Fatec Bebedouro aprende a conhecer e utilizar as principais tecnologias que compõem o conceito de Big Data, planejar, desenvolver, implementar e utilizar sistemas de informação além de conhecer as principais características do Agronegócio, desenvolver assim a capacidade de resolução de problemas do Agronegócio utilizando-se dos recursos de tecnologia da informação."
+        },
+        "Duração": "6 semestres",
+        "Vagas": "40 (por semestre)",
+        "Grau": "Tecnológico",
+        "Modalidade": "Presencial",
+        "Grade": {
+            "Matriz Curricular BD no Agronegócio (até 2025)": "https://fatecbb.cps.sp.gov.br/grade-bigdata-2/",
+            "Matriz Curricular Big Data no Agronegócio (Nova 2026)": "https://fatecbb.cps.sp.gov.br/grade-big-data-no-agronegocio-nova-2026/"
+        },
+        "O que o profissional de Big Data no Agronegócio faz?": {
+            "Desenvolve softwares voltados para o agronegócio": "",
+            "Instala e gerencia dispositivos de internet das coisas, como sensores, em ambientes agrícolas para captar e gerar dados": "",
+            "Projeta e configura redes de sensores e de transmissão de dados de campo": "",
+            "Analisa dados coletados pelos aparelhos e produz relatórios para a tomada de decisão de gestores de agronegócios": "",
+            "Implementa banco de dados em nuvem": ""
+        },
+        "Onde o profissional de Big Data no Agronegócio pode trabalhar?": {
+            "Fazendas": "",
+            "Lojas revendedoras de produtos agrícolas": "",
+            "Consultorias ou empresas prestadoras de serviços agronômicos": "",
+            "Empresas desenvolvedoras de software e fabricantes de equipamentos agrícolas e insumos": ""
+        }
+    },
+    "perguntas_frequentes": [
+        {
+            "pergunta": "Quanto tempo dura o curso de Big Data no Agronegócio?",
+            "resposta": "O curso dura 6 semestres."
+        },
+        {
+            "pergunta": "Quantas vagas o curso de Big Data no Agronegócio oferece?",
+            "resposta": "São 40 vagas por semestre."
+        },
+        {
+            "pergunta": "O curso de Big Data no Agronegócio é presencial?",
+            "resposta": "Sim, a modalidade é presencial e o grau é tecnológico."
+        },
+        {
+            "pergunta": "O que o aluno de Big Data no Agronegócio estuda?",
+            "resposta": "O aluno aprende as principais tecnologias de Big Data, a planejar, desenvolver, implementar e utilizar sistemas de informação, além das principais características do Agronegócio, para resolver problemas do setor com tecnologia da informação."
+        },
+        {
+            "pergunta": "O que faz o profissional de Big Data no Agronegócio?",
+            "resposta": "Desenvolve softwares voltados ao agronegócio; instala e gerencia dispositivos de IoT (sensores) em ambientes agrícolas; projeta e configura redes de sensores e de transmissão de dados de campo; analisa dados e produz relatórios para a tomada de decisão; e implementa banco de dados em nuvem."
+        },
+        {
+            "pergunta": "Onde o profissional de Big Data no Agronegócio pode trabalhar?",
+            "resposta": "Em fazendas, lojas revendedoras de produtos agrícolas, consultorias ou empresas prestadoras de serviços agronômicos, empresas desenvolvedoras de software e fabricantes de equipamentos agrícolas e insumos."
+        },
+        {
+            "pergunta": "Quais são os prazos importantes de 2026 do curso de Big Data no Agronegócio?",
+            "resposta": "Entrega das 3 cópias do TCC: até 19 de novembro de 2026. Entrega do anteprojeto do TCC: 23 de novembro de 2026. Entrega dos documentos de estágio: até 27 de novembro de 2026. Apresentação do TCC: de 07 a 11 de dezembro de 2026."
+        },
+        {
+            "pergunta": "Onde vejo a grade curricular de Big Data no Agronegócio?",
+            "resposta": "Matriz até 2025: https://fatecbb.cps.sp.gov.br/grade-bigdata-2/. Matriz Nova 2026: https://fatecbb.cps.sp.gov.br/grade-big-data-no-agronegocio-nova-2026/. Confirme o ano de ingresso para saber qual se aplica."
+        },
+        {
+            "pergunta": "Onde encontro informações de TCC e estágio de Big Data?",
+            "resposta": "TCC: https://fatecbb.cps.sp.gov.br/tcc-big-data-no-agronegocio/. Estágio: https://fatecbb.cps.sp.gov.br/estagio-big-data-no-agronegocio/"
+        }
+    ]
+}
